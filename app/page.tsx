@@ -29,7 +29,8 @@ import {
 } from '@/lib/simulation/agentRunner';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<NavTab>('bounties');
+  // Page default tab set to 'world' so it loads straight into 2.5D Isometric World map on home!
+  const [activeTab, setActiveTab] = useState<NavTab>('world');
   const [selectedDistrict, setSelectedDistrict] = useState<DistrictId>('khari_baoli');
   const [selectedAgent, setSelectedAgent] = useState<Agent | undefined>(undefined);
 
@@ -162,11 +163,14 @@ export default function Home() {
         <Header />
 
         <main className="flex-1 px-4 md:px-8 py-6 space-y-6 max-w-[1400px] mx-auto w-full">
-          {/* AI AGENT PROMPT BANNER */}
-          <AiAgentBanner onOpenSkillModal={() => setIsSkillModalOpen(true)} />
+          {/* AI AGENT PROMPT BANNER WITH SKILL.MD + JOIN WORLD BUTTON */}
+          <AiAgentBanner
+            onOpenSkillModal={() => setIsSkillModalOpen(true)}
+            onJoinWorld={() => setActiveTab('world')}
+          />
 
           {/* TAB CONTENT: WORLD MAP VIEW VS BOUNTY GRID */}
-          {activeTab === 'world' ? (
+          {activeTab === 'world' || activeTab === 'home' ? (
             <OldDelhiMap
               economy={economyState}
               agents={agents}
@@ -230,7 +234,7 @@ export default function Home() {
           onDeployFromSkill={handleDeployAgent}
         />
 
-        {/* BOTTOM STATUS BAR MATCHING REFERENCE IMAGE */}
+        {/* BOTTOM STATUS BAR */}
         <footer className="px-6 py-2 border-t border-[#1C1410] bg-[#080605] flex items-center justify-between font-mono text-[11px] text-[#7A6E65]">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
