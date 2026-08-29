@@ -32,17 +32,17 @@ export default function DeployAgentModal({
   onClose,
   onDeploy,
 }: DeployAgentModalProps) {
-  const [name, setName] = useState('Salim the Mandi Agent');
+  const [name, setName] = useState('Salim the Auto-Trader');
   const [jobType, setJobType] = useState<AgentJobType>('TRADER');
   const [district, setDistrict] = useState<DistrictId>(defaultDistrict);
   const [commodity, setCommodity] = useState<CommodityType>('spices');
   const [buyBelow, setBuyBelow] = useState(11);
-  const [sellAbove, setSellAbove] = useState(16);
-  const [capital, setCapital] = useState(150);
+  const [sellAbove, setSellAbove] = useState(15);
+  const [capital, setCapital] = useState(10); // Micro-payload: 10 MON default
 
   if (!isOpen) return null;
 
-  const deploymentFee = 50;
+  const deploymentFee = 5; // Minimal 5 MON deployment fee
   const totalRequired = deploymentFee + capital;
   const canAfford = playerBalance >= totalRequired;
 
@@ -208,20 +208,23 @@ export default function DeployAgentModal({
             </div>
           </div>
 
-          {/* Capital Allocation */}
+          {/* Capital Allocation Slider */}
           <div>
             <label className="block text-[11px] text-[#A89F91] font-bold mb-1">
-              INITIAL MON CAPITAL ALLOCATION: {capital} MON
+              OPTIMIZED MICRO PAYLOAD: {capital} MON
             </label>
             <input
               type="range"
-              min="50"
-              max="500"
-              step="10"
+              min="5"
+              max="50"
+              step="1"
               value={capital}
               onChange={(e) => setCapital(Number(e.target.value))}
               className="w-full accent-[#D97706]"
             />
+            <p className="text-[9px] text-[#A89F91] mt-0.5">
+              * Minimal capital payload strategy prevents liquidity trapping.
+            </p>
           </div>
 
           {/* Summary & Cost Breakdown */}

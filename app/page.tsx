@@ -3,19 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Sidebar, { NavTab } from '@/components/Sidebar';
+import AiAgentBanner from '@/components/AiAgentBanner';
+import BountyAgentGrid from '@/components/BountyAgentGrid';
 import OldDelhiMap from '@/components/OldDelhiMap';
 import AgentDashboard from '@/components/AgentDashboard';
 import DistrictArbitragePanel from '@/components/DistrictArbitragePanel';
 import DeployAgentModal from '@/components/DeployAgentModal';
+import AgentSkillModal from '@/components/AgentSkillModal';
 import FloatingContextCard from '@/components/FloatingContextCard';
-import EconomyPanel from '@/components/EconomyPanel';
-import PlayerPanel from '@/components/PlayerPanel';
-import ActionsPanel from '@/components/ActionsPanel';
-import WorldEvent from '@/components/WorldEvent';
-import CascadeVisualization from '@/components/CascadeVisualization';
-import MonaCorpPanel from '@/components/MonaCorpPanel';
-import ActivityLog from '@/components/ActivityLog';
-import CompanyCards from '@/components/CompanyCards';
 
 import {
   DistrictId,
@@ -34,11 +29,12 @@ import {
 } from '@/lib/simulation/agentRunner';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<NavTab>('world');
+  const [activeTab, setActiveTab] = useState<NavTab>('bounties');
   const [selectedDistrict, setSelectedDistrict] = useState<DistrictId>('khari_baoli');
   const [selectedAgent, setSelectedAgent] = useState<Agent | undefined>(undefined);
 
   const [isDeployModalOpen, setIsDeployModalOpen] = useState(false);
+  const [isSkillModalOpen, setIsSkillModalOpen] = useState(false);
   const [deployTargetDistrict, setDeployTargetDistrict] = useState<DistrictId>('khari_baoli');
 
   const [playerBalance, setPlayerBalance] = useState(1250);
@@ -51,19 +47,16 @@ export default function Home() {
 
   const [agents, setAgents] = useState<Agent[]>(INITIAL_PLAYER_AGENTS);
   const [logs, setLogs] = useState<string[]>([
-    'Welcome to Chain Reaction: Old Delhi Mandi Edition.',
     'System initialized — Khari Baoli, Chandni Chowk & Jama Masjid online.',
-    'Workforce agents deployed: Rafi the Spice Trader & Kabir the Mandi Courier.',
+    'Autonomous agents active: Rafi (Trader) & Kabir (Courier).',
   ]);
 
   // Master Game Loop — 2.5s tick rate
   useEffect(() => {
     const interval = setInterval(() => {
-      // 1. Tick District Economy
       setEconomyState((prevEconomy) => {
         const nextEco = tickDistrictEconomy(prevEconomy);
 
-        // 2. Tick Active Agents
         setAgents((prevAgents) => {
           let balanceAccumulator = 0;
           const newLogs: string[] = [];
@@ -95,7 +88,6 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // Agent Actions
   const handleToggleAgentStatus = (agentId: string) => {
     setAgents((prev) =>
       prev.map((a) => {
@@ -105,7 +97,7 @@ export default function Home() {
         return {
           ...a,
           status: newStatus,
-          speechBubble: newStatus === 'WORKING' ? 'Resumed duties! ⚡' : 'Paused by player ⏸️',
+          speechBubble: newStatus === 'WORKING' ? 'Resumed duties! ⚡' : 'Paused ⏸️',
         };
       })
     );
@@ -118,17 +110,14 @@ export default function Home() {
     setAgents((prev) =>
       prev.map((a) => {
         if (a.id !== agentId) return a;
-        const newCapital = a.availableCapital + amount;
         return {
           ...a,
-          availableCapital: newCapital,
+          availableCapital: a.availableCapital + amount,
           status: a.status === 'BLOCKED' ? 'WORKING' : a.status,
-          speechBubble: `Received +${amount} MON capital funding! 💰`,
+          speechBubble: `+${amount} MON payload funded! 💰`,
         };
       })
     );
-
-    setLogs((prev) => [`Funded agent with ${amount} MON capital.`, ...prev]);
   };
 
   const handleDeployAgent = (
@@ -147,113 +136,86 @@ export default function Home() {
     };
 
     setAgents((prev) => [...prev, newAgent]);
-    setLogs((prev) => [
-      `🎉 Deployed new agent '${newAgent.name}' in ${newAgent.location} (${newAgent.jobType}).`,
-      ...prev,
-    ]);
   };
 
   const handleExecuteArbitrage = (opp: ArbitrageOpportunity) => {
-    const cost = opp.buyPrice * 5 + opp.transportCost;
+    const cost = opp.buyPrice * 3 + opp.transportCost;
     if (playerBalance < cost) return;
 
-    const yieldAmount = opp.sellPrice * 5;
+    const yieldAmount = opp.sellPrice * 3;
     const profit = Math.round((yieldAmount - cost) * 10) / 10;
 
     setPlayerBalance((b) => Math.round((b + profit) * 10) / 10);
-    setLogs((prev) => [
-      `⚡ Manual Arbitrage Haul: Carried 5 ${opp.commodity} from ${DISTRICTS[opp.sourceDistrict].name} to ${DISTRICTS[opp.targetDistrict].name} (+${profit} MON net profit)!`,
-      ...prev,
-    ]);
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#140F0D] text-[#D4C4B5] selection:bg-[#D97706] selection:text-black">
+    <div className="flex h-screen w-screen overflow-hidden bg-[#0A0706] text-[#D4C4B5] selection:bg-[#D97706] selection:text-black">
       {/* LEFT NAVIGATION SIDEBAR */}
       <Sidebar
         activeTab={activeTab}
         onSelectTab={setActiveTab}
-        agentCount={agents.length}
+        onOpenDeployModal={() => setIsDeployModalOpen(true)}
       />
 
       {/* MAIN CONTAINER */}
       <div className="flex-1 flex flex-col h-full overflow-y-auto">
         <Header />
 
-        <main className="flex-1 px-4 md:px-6 py-6 space-y-6 max-w-[1600px] mx-auto w-full">
-          {/* SPATIAL WORLD MAP — OLD DELHI */}
-          <OldDelhiMap
-            economy={economyState}
-            agents={agents}
-            selectedDistrict={selectedDistrict}
-            onSelectDistrict={(dId) => {
-              setSelectedDistrict(dId);
-              setSelectedAgent(undefined);
-            }}
-            onOpenDeployModal={(dId) => {
-              setDeployTargetDistrict(dId);
-              setIsDeployModalOpen(true);
-            }}
-          />
+        <main className="flex-1 px-4 md:px-8 py-6 space-y-6 max-w-[1400px] mx-auto w-full">
+          {/* AI AGENT PROMPT BANNER */}
+          <AiAgentBanner onOpenSkillModal={() => setIsSkillModalOpen(true)} />
 
-          {/* CROSS-DISTRICT ARBITRAGE SCANNER */}
+          {/* TAB CONTENT: WORLD MAP VIEW VS BOUNTY GRID */}
+          {activeTab === 'world' ? (
+            <OldDelhiMap
+              economy={economyState}
+              agents={agents}
+              selectedDistrict={selectedDistrict}
+              onSelectDistrict={(dId) => {
+                setSelectedDistrict(dId);
+                setSelectedAgent(undefined);
+              }}
+              onOpenDeployModal={(dId) => {
+                setDeployTargetDistrict(dId);
+                setIsDeployModalOpen(true);
+              }}
+            />
+          ) : (
+            <BountyAgentGrid
+              agents={agents}
+              onOpenDeployModal={() => setIsDeployModalOpen(true)}
+              onOpenSkillModal={() => setIsSkillModalOpen(true)}
+            />
+          )}
+
+          {/* DYNAMIC ARBITRAGE & WORKFORCE DASHBOARD */}
           <DistrictArbitragePanel
             economy={economyState}
             onExecuteArbitrage={handleExecuteArbitrage}
           />
 
-          {/* WORKFORCE AGENT DASHBOARD */}
           <AgentDashboard
             agents={agents}
             onToggleStatus={handleToggleAgentStatus}
             onFundAgent={handleFundAgent}
-            onOpenDeployModal={() => {
-              setDeployTargetDistrict(selectedDistrict);
-              setIsDeployModalOpen(true);
-            }}
+            onOpenDeployModal={() => setIsDeployModalOpen(true)}
+            onOpenSkillModal={() => setIsSkillModalOpen(true)}
           />
-
-          {/* MANDI OVERVIEW & COMPANIES */}
-          <EconomyPanel />
-          <CompanyCards />
-
-          {/* MAIN GAME GRID */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left Column */}
-            <div className="lg:col-span-4 space-y-6">
-              <PlayerPanel />
-              <ActionsPanel />
-            </div>
-
-            {/* Center Column */}
-            <div className="lg:col-span-4 space-y-6">
-              <WorldEvent />
-              <CascadeVisualization />
-            </div>
-
-            {/* Right Column */}
-            <div className="lg:col-span-4 space-y-6">
-              <MonaCorpPanel />
-              <ActivityLog />
-            </div>
-          </div>
         </main>
 
-        {/* FLOATING CONTEXT INSPECTION CARD */}
+        {/* FLOATING CONTEXT CARD */}
         <FloatingContextCard
           selectedAgent={selectedAgent}
           selectedDistrict={selectedDistrict}
           markets={economyState.markets}
-          onClose={() => {
-            setSelectedAgent(undefined);
-          }}
+          onClose={() => setSelectedAgent(undefined)}
           onDeployAgent={(dId) => {
             setDeployTargetDistrict(dId);
             setIsDeployModalOpen(true);
           }}
         />
 
-        {/* DEPLOY AGENT MODAL */}
+        {/* DEPLOY MODALS */}
         <DeployAgentModal
           isOpen={isDeployModalOpen}
           defaultDistrict={deployTargetDistrict}
@@ -262,14 +224,24 @@ export default function Home() {
           onDeploy={handleDeployAgent}
         />
 
-        {/* FOOTER */}
-        <footer className="px-6 py-3 border-t-4 border-[#2A211D] bg-[#1A1412] flex items-center justify-between font-mono text-[10px] text-[#A89F91] font-bold">
-          <span>
-            CHAIN REACTION v0.3.0 — Old Delhi Spatial & UI Spec Edition
-          </span>
-          <span>
-            MONAD TESTNET SIMULATION — LIVE MANDI WORLD 📜
-          </span>
+        <AgentSkillModal
+          isOpen={isSkillModalOpen}
+          onClose={() => setIsSkillModalOpen(false)}
+          onDeployFromSkill={handleDeployAgent}
+        />
+
+        {/* BOTTOM STATUS BAR MATCHING REFERENCE IMAGE */}
+        <footer className="px-6 py-2 border-t border-[#1C1410] bg-[#080605] flex items-center justify-between font-mono text-[11px] text-[#7A6E65]">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Connected</span>
+            <span className="text-[#3D3029]">|</span>
+            <span>server <span className="text-[#A89F91]">api.chainreaction.monad</span></span>
+          </div>
+
+          <div className="hidden sm:block">
+            Monad Testnet • ChainId 10143
+          </div>
         </footer>
       </div>
     </div>

@@ -8,6 +8,7 @@ interface AgentDashboardProps {
   onToggleStatus: (agentId: string) => void;
   onFundAgent: (agentId: string, amount: number) => void;
   onOpenDeployModal: () => void;
+  onOpenSkillModal: () => void;
 }
 
 export default function AgentDashboard({
@@ -15,30 +16,40 @@ export default function AgentDashboard({
   onToggleStatus,
   onFundAgent,
   onOpenDeployModal,
+  onOpenSkillModal,
 }: AgentDashboardProps) {
   const totalNetProfit = Math.round(agents.reduce((sum, a) => sum + a.netProfit, 0) * 10) / 10;
   const totalExpenses = Math.round(agents.reduce((sum, a) => sum + a.totalExpenses, 0) * 10) / 10;
   const totalGross = Math.round(agents.reduce((sum, a) => sum + a.grossEarnings, 0) * 10) / 10;
 
   return (
-    <div className="w-full rounded-xl border-4 border-[#2A211D] bg-[#1A1412] p-4 shadow-2xl space-y-4">
+    <div className="w-full rounded-2xl border-4 border-[#2A211D] bg-[#16110F] p-4 shadow-2xl space-y-4 font-mono">
       {/* Header & Metrics */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-[#3D3029] pb-3">
         <div>
-          <h3 className="font-mono text-base font-black text-[#F3E5AB] flex items-center gap-2">
-            <span>⚙️</span> PLAYER AGENT WORKFORCE DASHBOARD
+          <h3 className="text-base font-black text-[#F3E5AB] flex items-center gap-2">
+            <span>⚙️</span> AUTONOMOUS WORKFORCE DASHBOARD
           </h3>
-          <p className="font-mono text-[11px] text-[#A89F91]">
-            Deploy and manage autonomous economic agents executing trades, logistics, and retail.
+          <p className="text-[11px] text-[#A89F91]">
+            Deploy personalized autonomous agents with optimized micro-payload capital.
           </p>
         </div>
 
-        <button
-          onClick={onOpenDeployModal}
-          className="px-4 py-2 bg-[#D97706] hover:bg-[#F59E0B] text-black font-mono font-black text-xs rounded-lg shadow-lg transition transform hover:scale-105 active:scale-95 flex items-center gap-1.5"
-        >
-          <span>🤖</span> DEPLOY NEW AGENT
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onOpenSkillModal}
+            className="px-3.5 py-2 bg-[#261E1A] hover:bg-[#3D3029] text-[#F3E5AB] border border-[#4A3B32] font-mono font-bold text-xs rounded-xl shadow-lg transition flex items-center gap-1.5"
+          >
+            <span>📄</span> SKILL.MD DEPLOY
+          </button>
+
+          <button
+            onClick={onOpenDeployModal}
+            className="px-4 py-2 bg-[#D97706] hover:bg-[#F59E0B] text-black font-mono font-black text-xs rounded-xl shadow-lg transition transform hover:scale-105 active:scale-95 flex items-center gap-1.5"
+          >
+            <span>🤖</span> DEPLOY AGENT
+          </button>
+        </div>
       </div>
 
       {/* Aggregate Statistics Ribbon */}
