@@ -1,26 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Rozha+One&family=Yatra+One&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #1C1614;
+  --foreground: #2A211D;
+  --paper: #F7F0DF;
+  --paper-dark: #EADCBF;
+  --panel: #F3E9D2;
+  --panel-border: #D5C29D;
+  --panel-hover: #E8DAB7;
+  --accent-saffron: #D96B27;
+  --accent-terracotta: #B23B23;
+  --accent-turmeric: #D48C00;
+  --accent-postal: #1B4965;
+  --accent-green: #2D6A4F;
+  --accent-red: #A8201A;
+  --text-muted: #7D6C60;
+  --text-secondary: #524339;
+  --glow-saffron: 0 0 15px rgba(217, 107, 39, 0.3);
+  --glow-terracotta: 0 0 15px rgba(178, 59, 35, 0.3);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paper: var(--paper);
+  --color-paper-dark: var(--paper-dark);
+  --color-panel: var(--panel);
+  --color-panel-border: var(--panel-border);
+  --color-panel-hover: var(--panel-hover);
+  --color-accent-cyan: var(--accent-postal);
+  --color-accent-steel: #605043;
+  --color-accent-amber: var(--accent-turmeric);
+  --color-accent-saffron: var(--accent-saffron);
+  --color-accent-green: var(--accent-green);
+  --color-accent-red: var(--accent-red);
+  --color-accent-purple: #6B2D5C;
+  --color-text-muted: var(--text-muted);
+  --color-text-secondary: var(--text-secondary);
+  --font-heading: 'Rozha One', 'Yatra One', serif;
+  --font-serif: 'Cinzel', serif;
+  --font-mono: 'Courier Prime', monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--panel-border) transparent;
 }
 
 body {
-  background: var(--background);
+  background-color: #140F0E;
+  background-image: 
+    radial-gradient(#2A201A 1px, transparent 1px),
+    radial-gradient(#2A201A 1px, #140F0E 1px);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Courier Prime', monospace;
+}
+
+/* Vintage paper card style */
+.vintage-card {
+  background-color: var(--paper);
+  background-image: radial-gradient(rgba(180, 140, 90, 0.08) 1px, transparent 0);
+  background-size: 8px 8px;
+  border: 2px solid var(--panel-border);
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3), inset 0 0 30px rgba(210, 180, 130, 0.2);
+  position: relative;
+}
+
+.vintage-stamp-border {
+  border: 2px dashed #9E2A2B;
+}
+
+/* Vintage Stamp badge */
+.stamp-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-family: 'Courier Prime', monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: 2px solid currentColor;
+  transform: rotate(-2deg);
+  box-shadow: 1px 1px 0 currentColor;
+}
+
+/* Indian vintage ornamental divider */
+.vintage-divider {
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--accent-saffron),
+    var(--accent-saffron) 10px,
+    transparent 10px,
+    transparent 15px,
+    var(--accent-terracotta) 15px,
+    var(--accent-terracotta) 25px
+  );
+}
+
+/* Pulse animation for live status */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Cascade step animation */
+@keyframes cascade-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-cascade {
+  animation: cascade-in 0.4s ease-out forwards;
+}
+
+/* Blackout flash */
+@keyframes blackout-flash {
+  0% { opacity: 0; }
+  10% { opacity: 0.6; }
+  100% { opacity: 0; }
+}
+.animate-blackout-flash {
+  animation: blackout-flash 1.5s ease-out forwards;
 }
