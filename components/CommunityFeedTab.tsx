@@ -32,32 +32,32 @@ export default function CommunityFeedTab({ logs }: CommunityFeedTabProps) {
   ];
 
   return (
-    <div className="w-full space-y-4 font-mono select-none">
+    <div className="w-full space-y-4 font-sans select-none">
       {/* Feed Header */}
-      <div className="border-b border-[#2D231D] pb-3">
-        <h3 className="text-base font-black text-[#F3E5AB] flex items-center gap-2">
+      <div className="border-b border-[#1A1D2B] pb-3">
+        <h3 className="text-base font-extrabold text-white flex items-center gap-2">
           <span>📜</span> COMMUNITY GAZETTE & TRADE SIGNAL FEED
         </h3>
-        <p className="text-[11px] text-[#A89F91]">
+        <p className="text-xs text-gray-400">
           Live stream of civilian agent micro-transactions, district announcements, and market activity.
         </p>
       </div>
 
       {/* Featured Announcements */}
       <div className="space-y-3">
-        <h4 className="text-xs font-bold text-[#F59E0B]">TOWN CRIER ANNOUNCEMENTS</h4>
+        <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider">TOWN CRIER ANNOUNCEMENTS</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {announcements.map((item) => (
             <div
               key={item.id}
-              className="p-3.5 rounded-xl bg-[#140F0D] border border-[#2D231D] hover:border-[#D97706] transition space-y-2"
+              className="p-4 rounded-xl bg-[#0E1018] border border-[#1E2232] hover:border-blue-500/50 transition space-y-2 shadow-lg"
             >
-              <div className="flex items-center justify-between text-[10px]">
-                <span className="font-bold text-[#F3E5AB]">{item.author}</span>
-                <span className="text-[#7A6E65]">{item.time}</span>
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-white">{item.author}</span>
+                <span className="text-gray-500 text-[10px]">{item.time}</span>
               </div>
-              <p className="text-[11px] text-[#D4C4B5] leading-relaxed">{item.content}</p>
-              <span className="inline-block px-2 py-0.5 rounded text-[9px] font-bold bg-[#D97706]/20 text-[#F59E0B] border border-[#D97706]">
+              <p className="text-xs text-gray-300 leading-relaxed">{item.content}</p>
+              <span className="inline-block px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/40">
                 {item.tag}
               </span>
             </div>
@@ -67,11 +67,11 @@ export default function CommunityFeedTab({ logs }: CommunityFeedTabProps) {
 
       {/* Real-time Agent Log Stream */}
       <div className="space-y-2 pt-2">
-        <h4 className="text-xs font-bold text-[#F59E0B]">REAL-TIME CIVILIAN ACTIVITY STREAM</h4>
-        <div className="p-4 rounded-xl bg-[#120D0B] border border-[#2D231D] max-h-[300px] overflow-y-auto space-y-2 text-xs">
+        <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider">REAL-TIME CIVILIAN ACTIVITY STREAM</h4>
+        <div className="p-4 rounded-xl bg-[#06070B] border border-[#1E2232] max-h-[300px] overflow-y-auto space-y-2 text-xs">
           {logs.map((log, idx) => (
-            <div key={idx} className="flex items-start gap-2.5 text-[#D4C4B5] border-b border-[#231A15] pb-1.5 last:border-none">
-              <span className="text-amber-500">⚙️</span>
+            <div key={idx} className="flex items-start gap-2.5 text-gray-300 border-b border-[#141622] pb-2 last:border-none">
+              <span className="text-blue-400">⚙️</span>
               <span className="leading-snug">{log}</span>
             </div>
           ))}

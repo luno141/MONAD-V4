@@ -177,7 +177,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#0A0706] text-[#D4C4B5] selection:bg-[#D97706] selection:text-black font-mono">
+    <div className="flex h-screen w-screen overflow-hidden bg-[#090A0F] text-[#E2E8F0] selection:bg-blue-600 selection:text-white font-sans">
       {/* LEFT NAVIGATION SIDEBAR */}
       <Sidebar
         activeTab={activeTab}
@@ -231,6 +231,8 @@ export default function Home() {
           ) : activeTab === 'identities' ? (
             <BountyAgentGrid
               agents={agents}
+              onToggleAgentStatus={handleToggleAgentStatus}
+              onFundAgent={handleFundAgent}
               onOpenDeployModal={() => setIsDeployModalOpen(true)}
               onOpenSkillModal={() => setIsSkillModalOpen(true)}
             />
@@ -273,12 +275,12 @@ export default function Home() {
         />
 
         {/* BOTTOM STATUS BAR */}
-        <footer className="px-6 py-2 border-t border-[#1C1410] bg-[#080605] flex items-center justify-between font-mono text-[11px] text-[#7A6E65]">
+        <footer className="px-6 py-2 border-t border-[#181926] bg-[#06070B] flex items-center justify-between font-sans text-[11px] text-gray-400">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>Connected</span>
-            <span className="text-[#3D3029]">|</span>
-            <span>server <span className="text-[#A89F91]">api.delhigazette.monad</span></span>
+            <span className="text-gray-600">|</span>
+            <span>server <span className="text-gray-300">api.tiny.place</span></span>
           </div>
 
           <div className="hidden sm:block">

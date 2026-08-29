@@ -17,26 +17,16 @@ export default function Header() {
 
   return (
     <>
-      <header className="px-6 py-3.5 border-b-4 border-[#2A211D] bg-[#16110F] shadow-2xl relative select-none font-mono">
-        <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          {/* Production Product Logo */}
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 bg-[#D97706] rounded-xl border-2 border-[#2A211D] flex items-center justify-center font-black text-2xl text-black shadow-lg">
-              📜
+      <header className="px-6 py-3.5 border-b border-[#181926] bg-[#090A0F] shadow-lg relative select-none font-sans">
+        <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
+          {/* Brand Product Logo */}
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center font-black text-sm text-white shadow-md">
+              🪐
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl md:text-2xl font-black tracking-wider text-[#F3E5AB]">
-                  DELHI<span className="text-[#D97706]">GAZETTE</span>
-                </h1>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#D97706]/20 text-[#F59E0B] border border-[#D97706]">
-                  AUTONOMOUS WORKFORCE
-                </span>
-              </div>
-              <p className="text-[11px] text-[#A89F91]">
-                Purani Dilli Mandi Engine — Monad Testnet (ChainId 10143)
-              </p>
-            </div>
+            <span className="text-base font-extrabold tracking-tight text-white font-sans">
+              tiny.place
+            </span>
           </div>
 
           {/* Controls & Wallet Bar */}
@@ -44,9 +34,9 @@ export default function Header() {
             {/* Economy Guide Button */}
             <button
               onClick={() => setIsGuideOpen(true)}
-              className="px-3 py-1.5 bg-[#261E1A] hover:bg-[#3D3029] text-[#F3E5AB] border border-[#4A3B32] rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow"
+              className="px-3.5 py-1.5 bg-[#141622] hover:bg-[#1E2234] text-gray-300 border border-[#24283A] rounded-lg text-xs font-semibold transition flex items-center gap-1.5 shadow-sm"
             >
-              <span>📜</span> ECONOMY GUIDE
+              <span>📜</span> Guide
             </button>
 
             {/* Network Badge */}
@@ -54,50 +44,47 @@ export default function Header() {
               isCorrectNetwork ? (
                 <div
                   onClick={() => setIsPassportOpen(true)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 text-xs font-bold cursor-pointer hover:bg-emerald-500/20 shadow"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 text-xs font-semibold cursor-pointer hover:bg-emerald-500/20 transition"
                 >
                   <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>MONAD TESTNET</span>
+                  <span>Monad Testnet</span>
                 </div>
               ) : (
                 <button
                   onClick={() => switchChain?.({ chainId: monadTestnet.id })}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-red-500/50 bg-red-500/10 text-red-400 text-xs font-bold cursor-pointer hover:bg-red-500/20 shadow"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 text-xs font-semibold cursor-pointer hover:bg-red-500/20 transition"
                 >
                   <div className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
-                  <span>SWITCH NETWORK</span>
+                  <span>Switch Network</span>
                 </button>
               )
             ) : (
-              <div
-                onClick={() => setIsPassportOpen(true)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#4A3B32] bg-[#1E1714] text-[#A89F91] text-xs font-bold cursor-pointer hover:bg-[#2A1F19]"
-              >
-                <div className="w-2 h-2 rounded-full bg-[#A89F91]" />
-                <span>OFFLINE</span>
+              <div className="flex items-center gap-2 px-2.5 py-1 rounded-md text-xs text-gray-400">
+                <span>🇬🇧</span>
               </div>
             )}
 
-            {/* Wallet Passport Button */}
+            {/* Wallet Passport / Connect Button */}
             {isConnected ? (
               <button
                 onClick={() => setIsPassportOpen(true)}
-                className="px-4 py-2 bg-[#D97706] hover:bg-[#F59E0B] text-black font-black text-xs rounded-lg shadow-xl transition transform hover:scale-105"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-lg shadow-lg shadow-blue-600/20 transition transform hover:scale-[1.02] active:scale-95"
               >
-                WALLETS: {address?.slice(0, 6)}...{address?.slice(-4)} 💳
+                {address?.slice(0, 6)}...{address?.slice(-4)}
               </button>
             ) : (
               <button
                 onClick={() => setIsPassportOpen(true)}
-                className="px-4 py-2 bg-[#D97706] hover:bg-[#F59E0B] text-black font-black text-xs rounded-lg shadow-xl transition transform hover:scale-105"
+                className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-lg shadow-lg shadow-blue-600/20 transition transform hover:scale-[1.02] active:scale-95"
               >
-                CONNECT WALLET 💳
+                Connect
               </button>
             )}
           </div>
         </div>
       </header>
 
+      {/* MODALS */}
       <WalletPassportModal
         isOpen={isPassportOpen}
         onClose={() => setIsPassportOpen(false)}

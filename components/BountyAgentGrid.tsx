@@ -5,80 +5,102 @@ import { Agent } from '@/lib/types/agentTypes';
 
 interface BountyAgentGridProps {
   agents: Agent[];
-  onOpenDeployModal: () => void;
+  onToggleAgentStatus: (agentId: string) => void;
+  onFundAgent: (agentId: string, amount: number) => void;
   onOpenSkillModal: () => void;
+  onOpenDeployModal: () => void;
 }
 
 export default function BountyAgentGrid({
   agents,
-  onOpenDeployModal,
+  onToggleAgentStatus,
+  onFundAgent,
   onOpenSkillModal,
+  onOpenDeployModal,
 }: BountyAgentGridProps) {
   return (
-    <div className="w-full space-y-4 font-mono select-none">
-      {/* Sub-navigation Header */}
-      <div className="flex items-center justify-between border-b border-[#2D231D] pb-3">
+    <div className="w-full space-y-4 font-sans select-none">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between border-b border-[#1A1D2B] pb-3 gap-3">
         <div>
-          <h3 className="text-base font-black text-[#F3E5AB] flex items-center gap-2">
-            <span>👤</span> AUTONOMOUS CIVILIAN WORKFORCE DIRECTORY
+          <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+            <span>👤</span> AUTONOMOUS CIVILIAN WORKFORCE IDENTITIES DIRECTORY
           </h3>
-          <p className="text-[11px] text-[#A89F91]">
-            Registered working-class civilian identities, skill specs & operating parameters.
+          <p className="text-xs text-gray-400">
+            Registered civilian AI agent profiles running autonomously via SKILL.md specs & x402 payments.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenSkillModal}
-            className="px-3 py-1.5 rounded-lg bg-[#2A1F19] hover:bg-[#3D3029] text-[#F3E5AB] border border-[#D97706] font-bold text-xs transition"
+            className="px-3 py-1.5 bg-[#141622] hover:bg-[#1F2334] text-gray-200 border border-[#272B3C] font-semibold text-xs rounded-lg transition"
           >
-            + SKILL.md Import
+            <span>📜</span> VIEW SKILL.MD
           </button>
           <button
             onClick={onOpenDeployModal}
-            className="px-3 py-1.5 rounded-lg bg-[#D97706] hover:bg-[#F59E0B] text-black font-black text-xs transition"
+            className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-lg shadow-lg shadow-blue-600/20 transition transform hover:scale-105"
           >
-            + Deploy Civilian
+            + REGISTER AGENT
           </button>
         </div>
       </div>
 
-      {/* 2-Column Civilian Identity Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {agents.map((agent) => (
+      {/* Agents Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {agents.map((a) => (
           <div
-            key={agent.id}
-            className="p-4 rounded-xl bg-[#140F0D] border border-[#2D231D] hover:border-[#D97706] transition-all space-y-3 shadow-lg"
+            key={a.id}
+            className="p-4 rounded-xl bg-[#0E1018] border border-[#1E2232] hover:border-blue-500/50 transition space-y-3 shadow-lg"
           >
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center justify-between border-b border-[#1A1D2B] pb-2.5">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#2A1F19] border-2 border-[#D97706] flex items-center justify-center text-xl">
-                  {agent.avatar}
-                </div>
+                <span className="text-3xl">{a.avatar}</span>
                 <div>
-                  <h4 className="font-bold text-sm text-[#F3E5AB]">
-                    {agent.name}
-                  </h4>
-                  <div className="text-[10px] text-[#F59E0B] font-bold">
-                    {agent.civilianRole || agent.jobType}
-                  </div>
+                  <h4 className="font-bold text-sm text-white">{a.name}</h4>
+                  <div className="text-[11px] text-blue-400 font-semibold">{a.civilianRole || a.jobType}</div>
                 </div>
               </div>
 
-              <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500">
-                ACTIVE IDENTITY
+              <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                ACTIVE @ {a.location.toUpperCase()}
               </span>
             </div>
 
-            <p className="text-[11px] text-[#A89F91] leading-relaxed">
-              Assigned District: <span className="text-[#D4C4B5] font-bold">{agent.location}</span> • Target Commodity: <span className="text-[#F3E5AB] font-bold">{agent.contract.targetCommodity}</span>
-            </p>
+            <div className="space-y-1.5 text-xs text-gray-400">
+              <div className="flex justify-between">
+                <span>Working Capital:</span>
+                <span className="text-emerald-400 font-bold">{a.availableCapital} MON</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Energy Level:</span>
+                <span className="text-white font-bold">{a.energyLevel}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Daily Living Expense:</span>
+                <span className="text-amber-400 font-bold">{a.dailyLivingCost} MON</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Current Task:</span>
+                <span className="text-white truncate max-w-[150px]">{a.currentTask}</span>
+              </div>
+            </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-[#231A15] text-[11px]">
-              <span className="font-bold text-[#A89F91]">
-                Capital: <span className="text-emerald-400 font-black">{agent.availableCapital} MON</span>
-              </span>
-              <span className="text-[10px] text-[#7A6E65]">Lvl {agent.level} ({agent.efficiency}% Eff.)</span>
+            {/* Actions */}
+            <div className="pt-2 flex items-center justify-between border-t border-[#1A1D2B]">
+              <button
+                onClick={() => onFundAgent(a.id, 25)}
+                className="px-3 py-1 bg-[#141622] hover:bg-[#1F2334] text-amber-400 font-semibold text-[11px] rounded-lg border border-[#272B3C] transition"
+              >
+                + Fund 25 MON
+              </button>
+              <button
+                onClick={() => onToggleAgentStatus(a.id)}
+                className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] rounded-lg transition"
+              >
+                {a.status === 'WORKING' ? 'Pause' : 'Resume'}
+              </button>
             </div>
           </div>
         ))}

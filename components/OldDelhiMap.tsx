@@ -5,14 +5,14 @@ import dynamic from 'next/dynamic';
 import { DistrictId, Agent, DistrictEconomyState } from '@/lib/types/agentTypes';
 import { DISTRICTS } from '@/lib/simulation/districtEconomy';
 
-// Dynamic import for Three.js 3D Voxel Canvas (SSR Safe)
+// Dynamic import for 2.5D Isometric World Canvas (SSR Safe)
 const VoxelWorldCanvas = dynamic(() => import('@/components/VoxelWorldCanvas'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-[460px] bg-[#0A0807] rounded-xl border border-[#2E241F] flex flex-col items-center justify-center font-mono text-[#F3E5AB]">
-      <div className="w-8 h-8 rounded-full border-4 border-[#F59E0B] border-t-transparent animate-spin mb-3" />
-      <p className="text-xs font-bold">INITIALIZING ISOMETRIC ENGINE...</p>
-      <p className="text-[10px] text-[#A89F91] mt-1">Generating 2.5D Diamond City</p>
+    <div className="w-full h-[460px] bg-[#06070B] rounded-2xl border border-[#1E2232] flex flex-col items-center justify-center font-sans text-white">
+      <div className="w-8 h-8 rounded-full border-4 border-blue-500 border-t-transparent animate-spin mb-3" />
+      <p className="text-xs font-bold tracking-wider">INITIALIZING ISOMETRIC ENGINE...</p>
+      <p className="text-[10px] text-gray-400 mt-1">Generating 2.5D Diamond City Canvas</p>
     </div>
   ),
 });
@@ -86,66 +86,162 @@ export default function OldDelhiMap({
   }
 
   return (
-    <div className="relative w-full rounded-2xl border-4 border-[#2A211D] bg-[#120F0E] p-4 shadow-2xl overflow-hidden font-mono select-none">
+    <div className="relative w-full rounded-2xl border border-[#1E2232] bg-[#0E1018] p-4 shadow-2xl overflow-hidden font-sans select-none space-y-3">
       {/* Top Controls Header */}
-      <div className="relative z-20 flex flex-wrap items-center justify-between border-b-2 border-[#3D3029] pb-3 mb-3 gap-3">
+      <div className="relative z-20 flex flex-wrap items-center justify-between border-b border-[#1A1D2B] pb-3 gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#D97706]/20 border border-[#D97706] flex items-center justify-center text-lg text-[#F59E0B]">
+          <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-sm text-blue-400">
             🌆
           </div>
           <div>
-            <h2 className="text-sm font-black text-[#F3E5AB] tracking-wide flex items-center gap-2">
+            <h2 className="text-sm font-extrabold text-white tracking-wide flex items-center gap-2">
               OLD DELHI ISOMETRIC CITY WORLD
-              <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500">
+              <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/40">
                 {viewMode === '3d' ? '2.5D ISOMETRIC ENGINE' : '2D TILED MAP'}
               </span>
             </h2>
-            <p className="text-[10px] text-[#A89F91]">
-              {viewMode === '3d'
-                ? 'Drag to pan camera • Scroll / + - to zoom • Click market hubs to deploy agents'
-                : 'Drag to pan • Click to inspect districts'}
+            <p className="text-[11px] text-gray-400">
+              Interactive 2.5D Mandi map with autonomous agents, tea vendors & loaders
             </p>
           </div>
         </div>
 
-        {/* View Mode Switcher & Controls */}
+        {/* View Switcher & Action */}
         <div className="flex items-center gap-2">
-          {/* Toggle 3D / 2D Button */}
-          <div className="flex bg-[#1E1714] p-1 rounded-xl border border-[#4A3B32]">
+          <div className="flex items-center bg-[#06070B] rounded-lg p-1 border border-[#1A1D2B] text-xs">
             <button
               onClick={() => setViewMode('3d')}
-              className={`px-3 py-1 rounded-lg text-[10px] font-bold transition ${
+              className={`px-3 py-1 rounded-md font-bold transition ${
                 viewMode === '3d'
-                  ? 'bg-[#D97706] text-black shadow-md'
-                  : 'text-[#A89F91] hover:text-[#F3E5AB]'
+                  ? 'bg-blue-600 text-white shadow'
+                  : 'text-gray-400 hover:text-white'
               }`}
             >
-              🏙️ ISOMETRIC CITY
+              2.5D Canvas
             </button>
             <button
               onClick={() => setViewMode('2d')}
-              className={`px-3 py-1 rounded-lg text-[10px] font-bold transition ${
+              className={`px-3 py-1 rounded-md font-bold transition ${
                 viewMode === '2d'
-                  ? 'bg-[#D97706] text-black shadow-md'
-                  : 'text-[#A89F91] hover:text-[#F3E5AB]'
+                  ? 'bg-blue-600 text-white shadow'
+                  : 'text-gray-400 hover:text-white'
               }`}
             >
-              🗺️ 2D MAP
+              2D Grid
             </button>
           </div>
 
-          {/* 2D Mode Zoom Controls */}
-          {viewMode === '2d' && (
-            <div className="flex items-center gap-2">
+          <button
+            onClick={() => onOpenDeployModal(selectedDistrict)}
+            className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-lg shadow transition transform hover:scale-105 active:scale-95 flex items-center gap-1.5"
+          >
+            <span>🤖</span> Deploy Agent
+          </button>
+        </div>
+      </div>
+
+      {/* District Selection Tabs Bar */}
+      <div className="relative z-20 flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+        {(Object.keys(DISTRICTS) as DistrictId[]).map((dId) => {
+          const d = DISTRICTS[dId];
+          const isSelected = dId === selectedDistrict;
+
+          return (
+            <button
+              key={dId}
+              onClick={() => onSelectDistrict(dId)}
+              className={`px-3.5 py-2 rounded-xl border transition flex items-center gap-2 shrink-0 ${
+                isSelected
+                  ? 'bg-[#161926] border-blue-500 text-white font-bold shadow-lg'
+                  : 'bg-[#0A0B10] border-[#1A1D2B] text-gray-400 hover:text-white hover:border-gray-600'
+              }`}
+            >
+              <span className="text-base">{d.icon}</span>
+              <div className="text-left">
+                <div className="font-bold leading-tight">{d.name}</div>
+                <div className="text-[9px] opacity-75">{d.hindiName}</div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Main View Container (2.5D Canvas vs 2D Tiled Grid) */}
+      <div className="relative rounded-2xl border border-[#1E2232] bg-[#06070B] overflow-hidden shadow-2xl">
+        {viewMode === '3d' ? (
+          <VoxelWorldCanvas
+            economy={economy}
+            agents={agents}
+            selectedDistrict={selectedDistrict}
+            onSelectDistrict={onSelectDistrict}
+            onOpenDeployModal={onOpenDeployModal}
+          />
+        ) : (
+          <div
+            className="w-full h-[460px] relative cursor-grab active:cursor-grabbing overflow-hidden flex items-center justify-center"
+            onMouseDown={handleMouseDown2D}
+            onMouseMove={handleMouseMove2D}
+            onMouseUp={handleMouseUp2D}
+          >
+            <div
+              className="absolute transition-transform duration-75"
+              style={{
+                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+              }}
+            >
+              <div className="relative" style={{ width: 800, height: 500 }}>
+                {gridTiles.map((t, idx) => {
+                  const cx = 400 + t.isoX;
+                  const cy = 100 + t.isoY;
+
+                  return (
+                    <div
+                      key={idx}
+                      className="absolute group transition-transform"
+                      style={{
+                        left: `${cx}px`,
+                        top: `${cy}px`,
+                        zIndex: Math.floor(cy),
+                      }}
+                    >
+                      <div
+                        className={`w-[70px] h-[35px] transition-colors border border-white/5 ${
+                          t.isRoad
+                            ? 'bg-[#1C1F2B]'
+                            : t.isBuilding
+                            ? 'bg-[#0E1017]'
+                            : 'bg-[#0A0C14]'
+                        }`}
+                        style={{
+                          clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+                        }}
+                      />
+
+                      {t.isBuilding && (
+                        <div
+                          className="absolute bottom-[17px] left-[10px] w-[50px] bg-gradient-to-t from-[#141724] to-[#1E2234] border border-blue-500/20 rounded-t shadow-lg flex flex-col items-center justify-center text-[9px] text-blue-300 font-bold"
+                          style={{ height: `${t.buildingHeight}px` }}
+                        >
+                          🏬
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Zoom controls overlay */}
+            <div className="absolute bottom-3 right-3 flex items-center gap-1 bg-[#090A0F]/90 p-1 rounded-lg border border-[#1A1D2B] text-xs">
               <button
-                onClick={() => setZoom((z) => Math.min(1.5, z + 0.15))}
-                className="w-8 h-8 rounded-lg bg-[#2A1F19] hover:bg-[#3D3029] text-[#F3E5AB] border border-[#4A3B32] font-bold transition"
+                onClick={() => setZoom((z) => Math.min(z + 0.2, 2))}
+                className="w-7 h-7 rounded bg-[#141622] hover:bg-[#1F2334] text-white font-bold"
               >
                 +
               </button>
               <button
-                onClick={() => setZoom((z) => Math.max(0.6, z - 0.15))}
-                className="w-8 h-8 rounded-lg bg-[#2A1F19] hover:bg-[#3D3029] text-[#F3E5AB] border border-[#4A3B32] font-bold transition"
+                onClick={() => setZoom((z) => Math.max(z - 0.2, 0.6))}
+                className="w-7 h-7 rounded bg-[#141622] hover:bg-[#1F2334] text-white font-bold"
               >
                 -
               </button>
@@ -154,188 +250,14 @@ export default function OldDelhiMap({
                   setZoom(1);
                   setPan({ x: 0, y: 0 });
                 }}
-                className="px-2.5 py-1.5 rounded-lg bg-[#2A1F19] hover:bg-[#3D3029] text-[10px] text-[#A89F91] border border-[#4A3B32] font-bold transition"
+                className="px-2 py-1 rounded bg-[#141622] hover:bg-[#1F2334] text-gray-300 font-bold text-[10px]"
               >
                 RESET
               </button>
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* VIEWPORT: 3D VOXEL CANVAS OR 2D MAP */}
-      {viewMode === '3d' ? (
-        <VoxelWorldCanvas
-          economy={economy}
-          agents={agents}
-          selectedDistrict={selectedDistrict}
-          onSelectDistrict={onSelectDistrict}
-          onOpenDeployModal={onOpenDeployModal}
-        />
-      ) : (
-        <div
-          onMouseDown={handleMouseDown2D}
-          onMouseMove={handleMouseMove2D}
-          onMouseUp={handleMouseUp2D}
-          onMouseLeave={handleMouseUp2D}
-          className="relative w-full h-[460px] bg-[#0E0C0B] rounded-xl border border-[#3A2D25] overflow-hidden cursor-grab active:cursor-grabbing flex items-center justify-center"
-        >
-          <div
-            style={{
-              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-              transition: isDragging ? 'none' : 'transform 0.1s ease-out',
-            }}
-            className="relative w-0 h-0"
-          >
-            {/* Render Isometric Grid Tiles & Buildings */}
-            {gridTiles.map((tile) => {
-              const { r, c, isoX, isoY, isRoad, isBuilding, buildingHeight, buildingType } = tile;
-
-              return (
-                <div
-                  key={`${r}-${c}`}
-                  style={{
-                    left: `${isoX}px`,
-                    top: `${isoY}px`,
-                    zIndex: Math.floor(isoY + 500),
-                  }}
-                  className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
-                >
-                  {/* Tile Base */}
-                  <svg
-                    width={TILE_W}
-                    height={TILE_H + buildingHeight + 10}
-                    className="overflow-visible"
-                    style={{ marginTop: `-${buildingHeight}px` }}
-                  >
-                    {/* Road or Grass Tile Base */}
-                    <polygon
-                      points={`${TILE_W / 2},${buildingHeight} ${TILE_W},${buildingHeight + TILE_H / 2} ${TILE_W / 2},${buildingHeight + TILE_H} 0,${buildingHeight + TILE_H / 2}`}
-                      fill={isRoad ? '#252321' : '#2D4A27'}
-                      stroke={isRoad ? '#3D3834' : '#3E6635'}
-                      strokeWidth="1"
-                    />
-
-                    {/* Road Markings */}
-                    {isRoad && (
-                      <polygon
-                        points={`${TILE_W / 2},${buildingHeight + TILE_H / 4} ${TILE_W / 2 + 5},${buildingHeight + TILE_H / 2} ${TILE_W / 2},${buildingHeight + (TILE_H * 3) / 4} ${TILE_W / 2 - 5},${buildingHeight + TILE_H / 2}`}
-                        fill="#F59E0B"
-                        opacity="0.6"
-                      />
-                    )}
-
-                    {/* 3D Isometric Building Block */}
-                    {isBuilding && (
-                      <g className="cursor-pointer hover:opacity-90 transition">
-                        {/* Left Wall */}
-                        <polygon
-                          points={`0,${buildingHeight + TILE_H / 2} ${TILE_W / 2},${buildingHeight + TILE_H} ${TILE_W / 2},${TILE_H} 0,${TILE_H / 2}`}
-                          fill={buildingType === 'tall' ? '#2A363B' : '#4A2E2B'}
-                          stroke="#1A1F22"
-                        />
-                        {/* Right Wall */}
-                        <polygon
-                          points={`${TILE_W / 2},${buildingHeight + TILE_H} ${TILE_W},${buildingHeight + TILE_H / 2} ${TILE_W},${TILE_H / 2} ${TILE_W / 2},${TILE_H}`}
-                          fill={buildingType === 'tall' ? '#3B4B52' : '#5E3A36'}
-                          stroke="#1A1F22"
-                        />
-                        {/* Roof Top */}
-                        <polygon
-                          points={`${TILE_W / 2},0 ${TILE_W},${TILE_H / 2} ${TILE_W / 2},${TILE_H} 0,${TILE_H / 2}`}
-                          fill={buildingType === 'tall' ? '#4C6069' : '#734742'}
-                          stroke="#2A363B"
-                        />
-
-                        {/* Windows */}
-                        <rect x={TILE_W / 4 - 3} y={buildingHeight / 2} width="6" height="8" fill="#FDE047" opacity="0.8" />
-                        <rect x={(TILE_W * 3) / 4 - 3} y={buildingHeight / 2} width="6" height="8" fill="#FDE047" opacity="0.8" />
-                      </g>
-                    )}
-                  </svg>
-                </div>
-              );
-            })}
-
-            {/* Render Animated Agent Beans on the Grid */}
-            {agents.map((agent, index) => {
-              const gridR = (index * 3 + 1) % GRID_SIZE;
-              const gridC = (index * 2 + 2) % GRID_SIZE;
-              const isoX = (gridC - gridR) * (TILE_W / 2);
-              const isoY = (gridC + gridR) * (TILE_H / 2);
-
-              return (
-                <div
-                  key={agent.id}
-                  style={{
-                    left: `${isoX}px`,
-                    top: `${isoY - 15}px`,
-                    zIndex: Math.floor(isoY + 800),
-                  }}
-                  className="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-500 pointer-events-auto group cursor-pointer"
-                >
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-0.5 bg-[#FFFBEB] text-[#1E1714] font-mono text-[9px] font-black rounded-lg border border-[#D97706] shadow-xl whitespace-nowrap z-50 animate-bounce">
-                    {agent.speechBubble || 'on my way!'}
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#FFFBEB]" />
-                  </div>
-
-                  <div className="relative flex flex-col items-center">
-                    <div className="w-7 h-9 rounded-full bg-[#F59E0B] border-2 border-black flex flex-col items-center justify-center shadow-xl transform transition group-hover:scale-125">
-                      <span className="text-xs">{agent.avatar}</span>
-                      <div className="flex gap-1 mt-0.5">
-                        <div className="w-1 h-1 bg-black rounded-full" />
-                        <div className="w-1 h-1 bg-black rounded-full" />
-                      </div>
-                    </div>
-
-                    <span className="px-1 bg-black/80 text-[#F3E5AB] text-[8px] rounded font-bold mt-0.5 whitespace-nowrap">
-                      {agent.name.split(' ')[0]}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* District Mandi Hub Overlays */}
-            {(Object.keys(DISTRICTS) as DistrictId[]).map((dId, idx) => {
-              const d = DISTRICTS[dId];
-              const nodeR = idx === 0 ? 1 : idx === 1 ? 4 : 7;
-              const nodeC = idx === 0 ? 1 : idx === 1 ? 4 : 7;
-              const isoX = (nodeC - nodeR) * (TILE_W / 2);
-              const isoY = (nodeC + nodeR) * (TILE_H / 2);
-
-              return (
-                <div
-                  key={dId}
-                  style={{
-                    left: `${isoX}px`,
-                    top: `${isoY - 60}px`,
-                    zIndex: Math.floor(isoY + 900),
-                  }}
-                  onClick={() => onSelectDistrict(dId)}
-                  className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto cursor-pointer group"
-                >
-                  <div className="flex flex-col items-center p-2 rounded-xl bg-[#1E1714]/90 border-2 border-[#F59E0B] shadow-2xl backdrop-blur-md transform transition group-hover:scale-110">
-                    <span className="text-2xl">{d.icon}</span>
-                    <span className="text-[10px] font-black text-[#F3E5AB] whitespace-nowrap">
-                      {d.name}
-                    </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onOpenDeployModal(dId);
-                      }}
-                      className="mt-1 px-2 py-0.5 bg-[#D97706] hover:bg-[#F59E0B] text-black font-black text-[9px] rounded transition"
-                    >
-                      + DEPLOY
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
