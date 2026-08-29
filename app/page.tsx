@@ -236,7 +236,7 @@ export default function Home() {
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>Connected</span>
             <span className="text-[#3D3029]">|</span>
-            <span>server <span className="text-[#A89F91]">api.chainreaction.monad</span></span>
+            <span>server <span className="text-[#A89F91]">api.delhigazette.monad</span></span>
           </div>
 
           <div className="hidden sm:block">

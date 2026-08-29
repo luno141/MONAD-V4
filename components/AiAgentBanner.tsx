@@ -33,7 +33,7 @@ export default function AiAgentBanner({ onOpenSkillModal }: AiAgentBannerProps) 
         {/* Copyable Prompt Box */}
         <div className="relative flex items-center justify-between p-3.5 rounded-xl bg-[#0D0A08] border border-[#2D231D] text-xs text-[#F3E5AB]">
           <span className="font-mono pr-8 leading-relaxed">
-            Read <span className="text-[#60A5FA] underline cursor-pointer" onClick={onOpenSkillModal}>https://chain-reaction.monad/SKILL.md</span> and start deploying autonomous agents that harvest multi-district mandi spreads or optimize trade payloads.
+            Read <span className="text-[#60A5FA] underline cursor-pointer" onClick={onOpenSkillModal}>https://delhigazette.monad/SKILL.md</span> and start deploying autonomous agents that harvest multi-district mandi spreads or optimize trade payloads.
           </span>
           <button
             onClick={handleCopy}

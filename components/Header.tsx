@@ -22,19 +22,19 @@ export default function Header() {
           {/* Production Product Logo */}
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 bg-[#D97706] rounded-xl border-2 border-[#2A211D] flex items-center justify-center font-black text-2xl text-black shadow-lg">
-              ⚡
+              📜
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl md:text-2xl font-black tracking-wider text-[#F3E5AB]">
-                  CHAIN<span className="text-[#D97706]">REACTION</span>
+                  DELHI<span className="text-[#D97706]">GAZETTE</span>
                 </h1>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#D97706]/20 text-[#F59E0B] border border-[#D97706]">
-                  AUTONOMOUS AGENT NETWORK
+                  AUTONOMOUS WORKFORCE
                 </span>
               </div>
               <p className="text-[11px] text-[#A89F91]">
-                Old Delhi Mandi Engine — Monad Testnet (ChainId 10143)
+                Purani Dilli Mandi Engine — Monad Testnet (ChainId 10143)
               </p>
             </div>
           </div>

@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CHAIN REACTION — Onchain Economy",
-  description: "An autonomous onchain economy where one player action can trigger a cascade of economic changes. Built on Monad.",
+  title: 'Delhi Gazette — Autonomous Agent Workforce Engine',
+  description: 'Autonomous micro-payload agent network on Monad Testnet',
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

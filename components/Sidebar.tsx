@@ -46,10 +46,10 @@ export default function Sidebar({
         {/* Brand Header */}
         <div className="flex items-center gap-2.5 px-2">
           <div className="w-6 h-6 rounded-md bg-[#D97706] flex items-center justify-center font-black text-xs text-black">
-            ⚡
+            📜
           </div>
-          <span className="hidden md:inline font-black text-[#F3E5AB] tracking-wider text-sm">
-            chainreaction
+          <span className="hidden md:inline font-black text-[#F3E5AB] tracking-wider text-xs uppercase">
+            delhigazette
           </span>
         </div>
 
