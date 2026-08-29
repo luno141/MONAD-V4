@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { DistrictId, Agent, DistrictEconomyState } from '@/lib/types/agentTypes';
 import { DISTRICTS } from '@/lib/simulation/districtEconomy';
 
@@ -19,213 +19,270 @@ export default function OldDelhiMap({
   onSelectDistrict,
   onOpenDeployModal,
 }: OldDelhiMapProps) {
-  // District map node coordinates (%)
-  const districtNodes: Record<DistrictId, { x: number; y: number }> = {
-    khari_baoli: { x: 22, y: 35 },
-    chandni_chowk: { x: 50, y: 25 },
-    jama_masjid: { x: 78, y: 55 },
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStart = useRef({ x: 0, y: 0 });
+
+  // Grid dimensions
+  const GRID_SIZE = 10;
+  const TILE_W = 70;
+  const TILE_H = 35;
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    dragStart.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
   };
 
-  return (
-    <div className="relative w-full rounded-2xl border-4 border-[#2A211D] bg-[#16110F] p-4 shadow-2xl overflow-hidden min-h-[480px]">
-      {/* Background Tiled Grid & Decorative Isometric Pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(#3B2D26_1px,transparent_1px)] [background-size:20px_20px] opacity-30 pointer-events-none" />
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    setPan({
+      x: e.clientX - dragStart.current.x,
+      y: e.clientY - dragStart.current.y,
+    });
+  };
 
-      {/* Header Bar */}
-      <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 border-b-2 border-[#3D3029] pb-3 mb-4 font-mono">
+  const handleMouseUp = () => setIsDragging(false);
+
+  // Generate grid map layout (grass, roads, buildings)
+  const gridTiles = [];
+  for (let r = 0; r < GRID_SIZE; r++) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      const isRoadRow = r === 2 || r === 5 || r === 8;
+      const isRoadCol = c === 2 || c === 5 || c === 8;
+      const isRoad = isRoadRow || isRoadCol;
+      const isBuilding = !isRoad && (r + c) % 2 === 0;
+
+      // Isometric projection
+      const isoX = (c - r) * (TILE_W / 2);
+      const isoY = (c + r) * (TILE_H / 2);
+
+      gridTiles.push({
+        r,
+        c,
+        isoX,
+        isoY,
+        isRoad,
+        isBuilding,
+        buildingHeight: isBuilding ? 60 + ((r * 7 + c * 13) % 40) : 0,
+        buildingType: (r + c) % 3 === 0 ? 'tall' : 'medium',
+      });
+    }
+  }
+
+  return (
+    <div className="relative w-full rounded-2xl border-4 border-[#2A211D] bg-[#120F0E] p-4 shadow-2xl overflow-hidden font-mono select-none">
+      {/* Top Controls Header */}
+      <div className="relative z-20 flex items-center justify-between border-b-2 border-[#3D3029] pb-3 mb-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#D97706]/20 border border-[#D97706] flex items-center justify-center text-xl text-[#F59E0B]">
-            🗺️
+          <div className="w-9 h-9 rounded-xl bg-[#D97706]/20 border border-[#D97706] flex items-center justify-center text-lg text-[#F59E0B]">
+            🌆
           </div>
           <div>
-            <h2 className="text-base font-black text-[#F3E5AB] tracking-wide flex items-center gap-2">
-              OLD DELHI CITY NETWORK — LIVE MANDI SPATIAL MAP
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-[#D97706]/20 text-[#F59E0B] border border-[#D97706]">
-                ISOMETRIC ENGINE
+            <h2 className="text-sm font-black text-[#F3E5AB] tracking-wide flex items-center gap-2">
+              OLD DELHI ISOMETRIC CITY WORLD
+              <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500">
+                FULL TILED NETWORK
               </span>
             </h2>
-            <p className="text-[11px] text-[#A89F91]">
-              Select district hubs to inspect micro-prices or activate autonomous workforce agents.
+            <p className="text-[10px] text-[#A89F91]">
+              Drag to pan • Scroll / click to zoom • Click buildings or agents to inspect
             </p>
           </div>
         </div>
 
+        {/* Zoom Controls */}
         <div className="flex items-center gap-2">
-          <div className="px-3 py-1.5 bg-[#1E1714] rounded-lg border border-[#4A3B32] text-[11px] text-[#D4C4B5] font-bold flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Autonomous Workforce: {agents.length} Active Agents</span>
-          </div>
+          <button
+            onClick={() => setZoom((z) => Math.min(1.5, z + 0.15))}
+            className="w-8 h-8 rounded-lg bg-[#2A1F19] hover:bg-[#3D3029] text-[#F3E5AB] border border-[#4A3B32] font-bold transition"
+          >
+            +
+          </button>
+          <button
+            onClick={() => setZoom((z) => Math.max(0.6, z - 0.15))}
+            className="w-8 h-8 rounded-lg bg-[#2A1F19] hover:bg-[#3D3029] text-[#F3E5AB] border border-[#4A3B32] font-bold transition"
+          >
+            -
+          </button>
+          <button
+            onClick={() => {
+              setZoom(1);
+              setPan({ x: 0, y: 0 });
+            }}
+            className="px-2.5 py-1.5 rounded-lg bg-[#2A1F19] hover:bg-[#3D3029] text-[10px] text-[#A89F91] border border-[#4A3B32] font-bold transition"
+          >
+            RESET
+          </button>
         </div>
       </div>
 
-      {/* Interactive City Network Viewport */}
-      <div className="relative w-full h-[380px] bg-[#110D0B] rounded-xl border-2 border-[#382B24] overflow-hidden select-none">
-        {/* Isometric Grid Floor Decorative Overlay */}
+      {/* Main Interactive Isometric Canvas */}
+      <div
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        className="relative w-full h-[420px] bg-[#0E0C0B] rounded-xl border border-[#3A2D25] overflow-hidden cursor-grab active:cursor-grabbing flex items-center justify-center"
+      >
         <div
-          className="absolute inset-0 opacity-15 pointer-events-none"
           style={{
-            backgroundImage: `linear-gradient(60deg, #D97706 1px, transparent 1px), linear-gradient(-60deg, #D97706 1px, transparent 1px)`,
-            backgroundSize: '40px 40px',
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            transition: isDragging ? 'none' : 'transform 0.1s ease-out',
           }}
-        />
+          className="relative w-0 h-0"
+        >
+          {/* Render Isometric Grid Tiles & Buildings */}
+          {gridTiles.map((tile) => {
+            const { r, c, isoX, isoY, isRoad, isBuilding, buildingHeight, buildingType } = tile;
 
-        {/* Road & Transit Lines SVG */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 stroke-current text-[#D97706]">
-          {/* Path Khari Baoli <-> Chandni Chowk */}
-          <line
-            x1={`${districtNodes.khari_baoli.x}%`}
-            y1={`${districtNodes.khari_baoli.y}%`}
-            x2={`${districtNodes.chandni_chowk.x}%`}
-            y2={`${districtNodes.chandni_chowk.y}%`}
-            strokeWidth="3"
-            strokeDasharray="6 4"
-            opacity="0.8"
-          />
-          {/* Path Chandni Chowk <-> Jama Masjid */}
-          <line
-            x1={`${districtNodes.chandni_chowk.x}%`}
-            y1={`${districtNodes.chandni_chowk.y}%`}
-            x2={`${districtNodes.jama_masjid.x}%`}
-            y2={`${districtNodes.jama_masjid.y}%`}
-            strokeWidth="3"
-            strokeDasharray="6 4"
-            opacity="0.8"
-          />
-          {/* Path Khari Baoli <-> Jama Masjid */}
-          <line
-            x1={`${districtNodes.khari_baoli.x}%`}
-            y1={`${districtNodes.khari_baoli.y}%`}
-            x2={`${districtNodes.jama_masjid.x}%`}
-            y2={`${districtNodes.jama_masjid.y}%`}
-            strokeWidth="2"
-            strokeDasharray="4 4"
-            opacity="0.4"
-          />
-        </svg>
-
-        {/* Isometric Background Buildings & Landmarks */}
-        <div className="absolute left-[12%] top-[25%] opacity-40 text-2xl pointer-events-none font-mono text-[10px]">
-          🏢 Storefront Haveli
-        </div>
-        <div className="absolute left-[38%] top-[12%] opacity-40 text-2xl pointer-events-none font-mono text-[10px]">
-          🏬 Textile Bazaar
-        </div>
-        <div className="absolute left-[65%] top-[30%] opacity-40 text-2xl pointer-events-none font-mono text-[10px]">
-          🕌 Red Sandstone Minaret
-        </div>
-        <div className="absolute left-[85%] top-[70%] opacity-40 text-2xl pointer-events-none font-mono text-[10px]">
-          🍛 Spice Warehouse
-        </div>
-
-        {/* Render District Nodes */}
-        {(Object.keys(DISTRICTS) as DistrictId[]).map((dId) => {
-          const d = DISTRICTS[dId];
-          const pos = districtNodes[dId];
-          const isSelected = selectedDistrict === dId;
-          const spicePrice = economy.markets.spices.districtPrices[dId];
-          const grainPrice = economy.markets.grain.districtPrices[dId];
-
-          return (
-            <div
-              key={dId}
-              style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
-              onClick={() => onSelectDistrict(dId)}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 z-10 cursor-pointer transition-all duration-300 ${
-                isSelected ? 'scale-110 z-30' : 'hover:scale-105'
-              }`}
-            >
+            return (
               <div
-                className={`relative flex flex-col items-center p-3 rounded-xl border-2 backdrop-blur-md shadow-2xl transition-all ${
-                  isSelected
-                    ? 'border-[#F59E0B] bg-[#2A1F19]/95 shadow-[#F59E0B]/20 ring-2 ring-[#F59E0B]/50'
-                    : 'border-[#4A3B32] bg-[#1A1412]/90 hover:border-[#D97706]'
-                }`}
+                key={`${r}-${c}`}
+                style={{
+                  left: `${isoX}px`,
+                  top: `${isoY}px`,
+                  zIndex: Math.floor(isoY + 500),
+                }}
+                className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
               >
-                <div className="relative text-3xl mb-1 flex items-center gap-1">
-                  <span>{d.icon}</span>
-                  <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-black bg-[#D97706] text-black">
-                    {d.hindiName}
-                  </span>
-                </div>
-
-                <span className="font-mono text-xs font-black text-[#F3E5AB] text-center whitespace-nowrap">
-                  {d.name}
-                </span>
-
-                <div className="mt-1.5 flex items-center gap-2 text-[10px] font-mono font-bold bg-[#120D0B] px-2 py-1 rounded border border-[#3A2D25]">
-                  <span className="text-[#F59E0B]">🌶️ {spicePrice} MON</span>
-                  <span className="text-[#60A5FA]">🌾 {grainPrice} MON</span>
-                </div>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onOpenDeployModal(dId);
-                  }}
-                  className="mt-2 w-full py-1 px-2 bg-[#D97706] hover:bg-[#F59E0B] text-black font-mono font-black text-[10px] rounded-lg transition shadow"
+                {/* Tile Base */}
+                <svg
+                  width={TILE_W}
+                  height={TILE_H + buildingHeight + 10}
+                  className="overflow-visible"
+                  style={{ marginTop: `-${buildingHeight}px` }}
                 >
-                  + DEPLOY AGENT
-                </button>
+                  {/* Road or Grass Tile Base */}
+                  <polygon
+                    points={`${TILE_W / 2},${buildingHeight} ${TILE_W},${buildingHeight + TILE_H / 2} ${TILE_W / 2},${buildingHeight + TILE_H} 0,${buildingHeight + TILE_H / 2}`}
+                    fill={isRoad ? '#252321' : '#2D4A27'}
+                    stroke={isRoad ? '#3D3834' : '#3E6635'}
+                    strokeWidth="1"
+                  />
+
+                  {/* Road Markings */}
+                  {isRoad && (
+                    <polygon
+                      points={`${TILE_W / 2},${buildingHeight + TILE_H / 4} ${TILE_W / 2 + 5},${buildingHeight + TILE_H / 2} ${TILE_W / 2},${buildingHeight + (TILE_H * 3) / 4} ${TILE_W / 2 - 5},${buildingHeight + TILE_H / 2}`}
+                      fill="#F59E0B"
+                      opacity="0.6"
+                    />
+                  )}
+
+                  {/* 3D Isometric Building Block */}
+                  {isBuilding && (
+                    <g className="cursor-pointer hover:opacity-90 transition">
+                      {/* Left Wall */}
+                      <polygon
+                        points={`0,${buildingHeight + TILE_H / 2} ${TILE_W / 2},${buildingHeight + TILE_H} ${TILE_W / 2},${TILE_H} 0,${TILE_H / 2}`}
+                        fill={buildingType === 'tall' ? '#2A363B' : '#4A2E2B'}
+                        stroke="#1A1F22"
+                      />
+                      {/* Right Wall */}
+                      <polygon
+                        points={`${TILE_W / 2},${buildingHeight + TILE_H} ${TILE_W},${buildingHeight + TILE_H / 2} ${TILE_W},${TILE_H / 2} ${TILE_W / 2},${TILE_H}`}
+                        fill={buildingType === 'tall' ? '#3B4B52' : '#5E3A36'}
+                        stroke="#1A1F22"
+                      />
+                      {/* Roof Top */}
+                      <polygon
+                        points={`${TILE_W / 2},0 ${TILE_W},${TILE_H / 2} ${TILE_W / 2},${TILE_H} 0,${TILE_H / 2}`}
+                        fill={buildingType === 'tall' ? '#4C6069' : '#734742'}
+                        stroke="#2A363B"
+                      />
+
+                      {/* Windows */}
+                      <rect x={TILE_W / 4 - 3} y={buildingHeight / 2} width="6" height="8" fill="#FDE047" opacity="0.8" />
+                      <rect x={(TILE_W * 3) / 4 - 3} y={buildingHeight / 2} width="6" height="8" fill="#FDE047" opacity="0.8" />
+                    </g>
+                  )}
+                </svg>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
 
-        {/* Render Active Autonomous Agents */}
-        {agents.map((agent, index) => {
-          let agentX = districtNodes[agent.location].x;
-          let agentY = districtNodes[agent.location].y;
+          {/* Render Animated Agent Beans on the Grid */}
+          {agents.map((agent, index) => {
+            // Position agents on road grid nodes
+            const gridR = (index * 3 + 1) % GRID_SIZE;
+            const gridC = (index * 2 + 2) % GRID_SIZE;
+            const isoX = (gridC - gridR) * (TILE_W / 2);
+            const isoY = (gridC + gridR) * (TILE_H / 2);
 
-          if (agent.status === 'TRAVELLING' && agent.targetLocation) {
-            const targetPos = districtNodes[agent.targetLocation];
-            agentX = (agentX + targetPos.x) / 2;
-            agentY = (agentY + targetPos.y) / 2;
-          } else {
-            const offsetAngle = (index * 75 * Math.PI) / 180;
-            agentX += Math.cos(offsetAngle) * 7;
-            agentY += Math.sin(offsetAngle) * 7;
-          }
-
-          return (
-            <div
-              key={agent.id}
-              style={{ left: `${agentX}%`, top: `${agentY}%` }}
-              className="absolute -translate-x-1/2 -translate-y-1/2 z-20 transition-all duration-700 ease-in-out pointer-events-auto"
-            >
-              {agent.speechBubble && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-[#FFFBEB] text-[#1E1714] font-mono text-[9px] font-black rounded-lg border border-[#D97706] shadow-xl whitespace-nowrap z-40 animate-bounce">
-                  {agent.speechBubble}
+            return (
+              <div
+                key={agent.id}
+                style={{
+                  left: `${isoX}px`,
+                  top: `${isoY - 15}px`,
+                  zIndex: Math.floor(isoY + 800),
+                }}
+                className="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-500 pointer-events-auto group cursor-pointer"
+              >
+                {/* Speech Bubble */}
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-0.5 bg-[#FFFBEB] text-[#1E1714] font-mono text-[9px] font-black rounded-lg border border-[#D97706] shadow-xl whitespace-nowrap z-50 animate-bounce">
+                  {agent.speechBubble || 'on my way!'}
                   <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#FFFBEB]" />
                 </div>
-              )}
 
-              <div className="relative group cursor-pointer">
-                <div className="w-9 h-9 rounded-full bg-[#2A1F19] border-2 border-[#F59E0B] flex items-center justify-center text-base shadow-xl transition transform group-hover:scale-125">
-                  {agent.avatar}
-                </div>
+                {/* Cute Character Bean Sprite */}
+                <div className="relative flex flex-col items-center">
+                  <div className="w-7 h-9 rounded-full bg-[#F59E0B] border-2 border-black flex flex-col items-center justify-center shadow-xl transform transition group-hover:scale-125">
+                    <span className="text-xs">{agent.avatar}</span>
+                    <div className="flex gap-1 mt-0.5">
+                      <div className="w-1 h-1 bg-black rounded-full" />
+                      <div className="w-1 h-1 bg-black rounded-full" />
+                    </div>
+                  </div>
 
-                <div
-                  className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border border-black ${
-                    agent.status === 'WORKING'
-                      ? 'bg-emerald-500 animate-pulse'
-                      : agent.status === 'TRAVELLING'
-                      ? 'bg-blue-500'
-                      : agent.status === 'BLOCKED'
-                      ? 'bg-red-500'
-                      : 'bg-amber-500'
-                  }`}
-                />
-
-                <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-8 w-44 p-2 bg-[#1E1714] border-2 border-[#D97706] rounded-xl shadow-2xl z-50 text-[10px] font-mono">
-                  <div className="font-bold text-[#F3E5AB]">{agent.name}</div>
-                  <div className="text-[#A89F91]">Role: {agent.jobType}</div>
-                  <div className="text-[#A89F91]">Location: {agent.location}</div>
-                  <div className="text-emerald-400 font-bold">Net P&L: +{agent.netProfit} MON</div>
+                  {/* Name Label */}
+                  <span className="px-1 bg-black/80 text-[#F3E5AB] text-[8px] rounded font-bold mt-0.5 whitespace-nowrap">
+                    {agent.name.split(' ')[0]}
+                  </span>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+
+          {/* District Mandi Hub Overlays */}
+          {(Object.keys(DISTRICTS) as DistrictId[]).map((dId, idx) => {
+            const d = DISTRICTS[dId];
+            const nodeR = idx === 0 ? 1 : idx === 1 ? 4 : 7;
+            const nodeC = idx === 0 ? 1 : idx === 1 ? 4 : 7;
+            const isoX = (nodeC - nodeR) * (TILE_W / 2);
+            const isoY = (nodeC + nodeR) * (TILE_H / 2);
+
+            return (
+              <div
+                key={dId}
+                style={{
+                  left: `${isoX}px`,
+                  top: `${isoY - 60}px`,
+                  zIndex: Math.floor(isoY + 900),
+                }}
+                onClick={() => onSelectDistrict(dId)}
+                className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto cursor-pointer group"
+              >
+                <div className="flex flex-col items-center p-2 rounded-xl bg-[#1E1714]/90 border-2 border-[#F59E0B] shadow-2xl backdrop-blur-md transform transition group-hover:scale-110">
+                  <span className="text-2xl">{d.icon}</span>
+                  <span className="text-[10px] font-black text-[#F3E5AB] whitespace-nowrap">
+                    {d.name}
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenDeployModal(dId);
+                    }}
+                    className="mt-1 px-2 py-0.5 bg-[#D97706] hover:bg-[#F59E0B] text-black font-black text-[9px] rounded transition"
+                  >
+                    + DEPLOY
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
