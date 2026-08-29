@@ -26,134 +26,139 @@ export default function WalletPassportModal({ isOpen, onClose }: WalletPassportM
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-[#140F0E]/80 backdrop-blur-xs" />
+  const walletIcons: Record<string, string> = {
+    MetaMask: '🦊',
+    'Coinbase Wallet': '🔵',
+    Phantom: '👻',
+    WalletConnect: '🔗',
+    Injected: '⚡',
+  };
 
-      {/* Modal Card — Purani Dilli Gazette Identity Card */}
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md font-mono select-none animate-fade-in" onClick={onClose}>
+      {/* Modal Container */}
       <div
-        className="relative w-full max-w-lg vintage-card p-0 overflow-hidden shadow-[8px_8px_0px_#140F0E] animate-in fade-in zoom-in duration-150"
+        className="relative w-full max-w-lg rounded-2xl border-4 border-[#2A211D] bg-[#16110F] p-0 overflow-hidden shadow-2xl space-y-0 text-[#D4C4B5]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Banner */}
-        <div className="bg-[#2A211D] text-[#F7F0DF] px-6 py-4 flex items-center justify-between border-b-4 border-[#D96B27]">
+        <div className="bg-[#1E1714] text-[#F3E5AB] px-6 py-4 flex items-center justify-between border-b-2 border-[#3D3029]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#D96B27] border-2 border-[#F7F0DF] flex items-center justify-center text-xl shadow-[2px_2px_0px_#140F0E]">
-              📜
+            <div className="w-10 h-10 rounded-xl bg-[#D97706]/20 border border-[#D97706] flex items-center justify-center text-xl text-[#F59E0B] shadow">
+              💳
             </div>
             <div>
-              <h2 className="text-lg font-black uppercase tracking-widest font-serif text-[#F7F0DF]">
-                SARKARI IDENTITY PASSPORT
+              <h2 className="text-base font-black tracking-wide text-[#F3E5AB]">
+                WEB3 WALLET & IDENTITY PASSPORT
               </h2>
-              <p className="text-[10px] font-mono text-[#D5C29D]">
-                Tiny.place-style Agent & Human Identity Portal
+              <p className="text-[11px] text-[#A89F91]">
+                Monad Testnet • ChainId 10143
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-2xl font-bold hover:text-[#D96B27] transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-lg bg-[#2A1F19] hover:bg-[#3D3029] text-[#A89F91] hover:text-white font-bold text-base flex items-center justify-center transition"
           >
             ✕
           </button>
         </div>
 
-        {/* Modal Body */}
+        {/* Navigation Tabs */}
         <div className="p-6 space-y-5">
-          {/* Navigation Tabs */}
-          <div className="grid grid-cols-3 gap-2 font-mono text-xs">
+          <div className="grid grid-cols-3 gap-2 text-xs">
             <button
               onClick={() => setActiveTab('passport')}
-              className={`py-2 px-3 border-2 font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[2px_2px_0px_#2A211D] ${
+              className={`py-2 px-3 rounded-xl border font-bold transition-all ${
                 activeTab === 'passport'
-                  ? 'bg-[#D96B27] text-[#F7F0DF] border-[#2A211D]'
-                  : 'bg-[#EADCBF] text-[#2A211D] border-[#2A211D] hover:bg-[#D5C29D]'
+                  ? 'bg-[#2A1F19] text-[#F3E5AB] border-[#D97706] shadow'
+                  : 'bg-[#100C0A] text-[#A89F91] border-[#2D231D] hover:text-white'
               }`}
             >
-              ID Passport
+              ID PASSPORT
             </button>
             <button
               onClick={() => setActiveTab('connect')}
-              className={`py-2 px-3 border-2 font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[2px_2px_0px_#2A211D] ${
+              className={`py-2 px-3 rounded-xl border font-bold transition-all ${
                 activeTab === 'connect'
-                  ? 'bg-[#1B4965] text-[#F7F0DF] border-[#2A211D]'
-                  : 'bg-[#EADCBF] text-[#2A211D] border-[#2A211D] hover:bg-[#D5C29D]'
+                  ? 'bg-[#2A1F19] text-[#F3E5AB] border-[#D97706] shadow'
+                  : 'bg-[#100C0A] text-[#A89F91] border-[#2D231D] hover:text-white'
               }`}
             >
-              Wallets
+              WALLETS
             </button>
             <button
               onClick={() => setActiveTab('faucet')}
-              className={`py-2 px-3 border-2 font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[2px_2px_0px_#2A211D] ${
+              className={`py-2 px-3 rounded-xl border font-bold transition-all ${
                 activeTab === 'faucet'
-                  ? 'bg-[#2D6A4F] text-[#F7F0DF] border-[#2A211D]'
-                  : 'bg-[#EADCBF] text-[#2A211D] border-[#2A211D] hover:bg-[#D5C29D]'
+                  ? 'bg-[#2A1F19] text-[#F3E5AB] border-[#D97706] shadow'
+                  : 'bg-[#100C0A] text-[#A89F91] border-[#2D231D] hover:text-white'
               }`}
             >
-              MON Faucet
+              MON FAUCET 💧
             </button>
           </div>
 
-          {/* TAB 1: ID PASSPORT (Tiny.place style) */}
+          {/* TAB 1: ID PASSPORT */}
           {activeTab === 'passport' && (
-            <div className="space-y-4 font-mono">
-              {/* Agent Identity Card Stamp */}
-              <div className="bg-[#F7F0DF] border-4 border-[#2A211D] p-4 relative shadow-[4px_4px_0px_#2A211D]">
-                <div className="absolute top-3 right-3">
+            <div className="space-y-4">
+              <div className="bg-[#100C0A] border border-[#3D3029] rounded-xl p-4 space-y-3 shadow-inner">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-[#A89F91]">AGENT HANDLE</span>
                   {isConnected ? (
-                    <span className="stamp-badge border-[#2D6A4F] text-[#2D6A4F] text-[10px] bg-[#E2F0D9]">
+                    <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500">
                       VERIFIED PASSPORT
                     </span>
                   ) : (
-                    <span className="stamp-badge border-[#A8201A] text-[#A8201A] text-[10px] bg-[#FADBD8]">
+                    <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-red-500/20 text-red-400 border border-red-500">
                       UNSTAMPED
                     </span>
                   )}
                 </div>
 
-                <div className="text-[10px] font-bold text-[#7D6C60] mb-1">REGISTERED HANDLE</div>
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2">
                   <input
                     type="text"
                     value={agentHandle}
                     onChange={(e) => setAgentHandle(e.target.value)}
                     placeholder="@your-handle"
-                    className="border-2 border-[#2A211D] bg-[#EADCBF] px-3 py-1.5 font-bold text-sm text-[#2A211D] focus:outline-none flex-1"
+                    className="flex-1 bg-[#1A1412] border border-[#3D3029] rounded-lg px-3 py-2 text-xs font-bold text-[#F3E5AB] focus:border-[#D97706] focus:outline-none"
                   />
                   <button
                     onClick={() => setIsRegistered(true)}
-                    className="px-3 py-1.5 bg-[#2D6A4F] text-[#F7F0DF] border-2 border-[#2A211D] text-xs font-bold shadow-[2px_2px_0px_#2A211D] hover:bg-[#23533E] transition-all cursor-pointer"
+                    className="px-3 py-2 bg-[#D97706] hover:bg-[#F59E0B] text-black font-black text-xs rounded-lg transition"
                   >
                     {isRegistered ? 'CLAIMED ✓' : 'CLAIM @'}
                   </button>
                 </div>
 
                 {/* Public Key / Address */}
-                <div className="text-[10px] font-bold text-[#7D6C60] mb-1">PUBLIC ADDRESS / KEY</div>
-                <div className="bg-[#EADCBF] border-2 border-[#2A211D] p-2 text-xs font-bold text-[#2A211D] break-all flex items-center justify-between">
-                  <span>{address || '0x (Connect Wallet below)'}</span>
-                  {address && (
-                    <button
-                      onClick={() => navigator.clipboard.writeText(address)}
-                      className="ml-2 text-[10px] bg-[#2A211D] text-[#F7F0DF] px-2 py-0.5 rounded hover:bg-[#D96B27] cursor-pointer"
-                    >
-                      COPY
-                    </button>
-                  )}
+                <div>
+                  <div className="text-[10px] font-bold text-[#A89F91] mb-1">PUBLIC ADDRESS</div>
+                  <div className="bg-[#1A1412] border border-[#3D3029] rounded-lg p-2.5 text-xs text-[#F3E5AB] font-bold break-all flex items-center justify-between">
+                    <span>{address || '0x (Connect Wallet in Wallets tab)'}</span>
+                    {address && (
+                      <button
+                        onClick={() => navigator.clipboard.writeText(address)}
+                        className="ml-2 text-[10px] bg-[#261E1A] text-[#F3E5AB] px-2 py-1 rounded border border-[#4A3B32] hover:bg-[#3D3029]"
+                      >
+                        COPY
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Balance & Network State */}
-                <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t-2 border-[#D5C29D]">
+                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[#2D231D]">
                   <div>
-                    <div className="text-[9px] text-[#7D6C60] font-bold">MONAD BALANCE</div>
-                    <div className="text-lg font-black text-[#2D6A4F]">
+                    <div className="text-[10px] text-[#A89F91]">MONAD BALANCE</div>
+                    <div className="text-base font-black text-emerald-400">
                       {balanceData ? `${parseFloat(formatEther(balanceData.value)).toFixed(4)} ${balanceData.symbol}` : '0.00 MON'}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[9px] text-[#7D6C60] font-bold">NETWORK STATE</div>
-                    <div className="text-xs font-bold text-[#2A211D]">
+                    <div className="text-[10px] text-[#A89F91]">NETWORK</div>
+                    <div className="text-xs font-bold text-[#F3E5AB]">
                       {isConnected ? (isCorrectNetwork ? '🟢 MONAD TESTNET' : '🔴 WRONG NET') : '⚪ DISCONNECTED'}
                     </div>
                   </div>
@@ -164,29 +169,35 @@ export default function WalletPassportModal({ isOpen, onClose }: WalletPassportM
 
           {/* TAB 2: CONNECT WALLET OPTIONS */}
           {activeTab === 'connect' && (
-            <div className="space-y-3 font-mono">
-              <div className="text-xs text-[#524339] font-bold mb-2">CHOOSE WALLET CONNECTOR:</div>
+            <div className="space-y-3">
+              <div className="text-xs text-[#A89F91] font-bold mb-2">CHOOSE WALLET CONNECTOR:</div>
 
-              {connectors.map((connector) => (
-                <button
-                  key={connector.id}
-                  onClick={() => connect({ connector })}
-                  disabled={isPending}
-                  className="w-full p-3 border-2 border-[#2A211D] bg-[#F7F0DF] text-[#2A211D] font-bold text-sm flex items-center justify-between shadow-[3px_3px_0px_#2A211D] hover:bg-[#EADCBF] transition-all cursor-pointer disabled:opacity-50"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg">🦊</span>
-                    <span>{connector.name}</span>
-                  </div>
-                  <span className="text-xs text-[#D96B27] font-bold">CONNECT ➔</span>
-                </button>
-              ))}
+              {connectors.length > 0 ? (
+                connectors.map((connector) => (
+                  <button
+                    key={connector.id}
+                    onClick={() => connect({ connector })}
+                    disabled={isPending}
+                    className="w-full p-3.5 rounded-xl border border-[#3D3029] bg-[#100C0A] hover:bg-[#1C1410] text-[#F3E5AB] font-bold text-xs flex items-center justify-between shadow transition"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">{walletIcons[connector.name] || '💳'}</span>
+                      <span>{connector.name}</span>
+                    </div>
+                    <span className="text-[11px] text-[#D97706] font-bold">CONNECT ➔</span>
+                  </button>
+                ))
+              ) : (
+                <div className="p-4 bg-[#100C0A] rounded-xl text-xs text-[#A89F91] text-center border border-[#3D3029]">
+                  Browser wallet extensions (MetaMask, Coinbase Wallet, etc.) ready. Click to initialize.
+                </div>
+              )}
 
               {isConnected && (
-                <div className="pt-3 border-t-2 border-[#D5C29D]">
+                <div className="pt-3 border-t border-[#2D231D]">
                   <button
                     onClick={() => disconnect()}
-                    className="w-full py-2 border-2 border-[#A8201A] bg-[#FADBD8] text-[#A8201A] font-bold text-xs uppercase tracking-wider shadow-[2px_2px_0px_#A8201A] hover:bg-[#F5B7B1] transition-all cursor-pointer"
+                    className="w-full py-2.5 rounded-xl border border-red-500/50 bg-red-500/10 text-red-400 font-bold text-xs uppercase tracking-wider hover:bg-red-500/20 transition"
                   >
                     DISCONNECT WALLET PASSPORT ✕
                   </button>
@@ -195,20 +206,22 @@ export default function WalletPassportModal({ isOpen, onClose }: WalletPassportM
             </div>
           )}
 
-          {/* TAB 3: FAUCET & FUNDING */}
+          {/* TAB 3: FAUCET & NETWORK SWITCH */}
           {activeTab === 'faucet' && (
-            <div className="space-y-4 font-mono">
-              <div className="bg-[#EADCBF] border-2 border-[#2A211D] p-4 shadow-[2px_2px_0px_#2A211D]">
-                <div className="font-bold text-sm text-[#2A211D] mb-1">MONAD TESTNET FAUCET 💧</div>
-                <p className="text-xs text-[#524339] mb-3">
-                  Get free testnet MON tokens to trade resources, build thekas, and invest in autonomous company treasuries.
+            <div className="space-y-4">
+              <div className="bg-[#100C0A] border border-[#3D3029] rounded-xl p-4 space-y-3 shadow-inner">
+                <div className="font-bold text-xs text-[#F3E5AB] flex items-center gap-2">
+                  <span>💧</span> MONAD TESTNET FAUCET
+                </div>
+                <p className="text-xs text-[#A89F91]">
+                  Obtain free testnet MON tokens to fund autonomous agent micro-payloads and deploy mandi workforce contracts.
                 </p>
 
                 <a
                   href="https://faucet.monad.xyz"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block w-full py-3 text-center border-2 border-[#2A211D] bg-[#2D6A4F] text-[#F7F0DF] font-bold text-xs uppercase tracking-wider shadow-[3px_3px_0px_#2A211D] hover:bg-[#23533E] transition-all"
+                  className="inline-block w-full py-3 text-center rounded-xl bg-[#D97706] hover:bg-[#F59E0B] text-black font-black text-xs uppercase tracking-wider shadow transition"
                 >
                   OPEN MONAD OFFICIAL FAUCET ↗
                 </a>
@@ -217,7 +230,7 @@ export default function WalletPassportModal({ isOpen, onClose }: WalletPassportM
               {!isCorrectNetwork && isConnected && (
                 <button
                   onClick={() => switchChain?.({ chainId: monadTestnet.id })}
-                  className="w-full py-3 border-2 border-[#A8201A] bg-[#A8201A] text-[#F7F0DF] font-bold text-xs uppercase tracking-wider shadow-[3px_3px_0px_#2A211D] hover:bg-[#851915] transition-all cursor-pointer"
+                  className="w-full py-3 rounded-xl border border-red-500/50 bg-red-500/20 text-red-300 font-bold text-xs uppercase tracking-wider hover:bg-red-500/30 transition"
                 >
                   SWITCH WALLET TO MONAD TESTNET (CHAIN ID 10143)
                 </button>
