@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
+import Sidebar, { NavTab } from '@/components/Sidebar';
 import OldDelhiMap from '@/components/OldDelhiMap';
 import AgentDashboard from '@/components/AgentDashboard';
 import DistrictArbitragePanel from '@/components/DistrictArbitragePanel';
 import DeployAgentModal from '@/components/DeployAgentModal';
+import FloatingContextCard from '@/components/FloatingContextCard';
 import EconomyPanel from '@/components/EconomyPanel';
 import PlayerPanel from '@/components/PlayerPanel';
 import ActionsPanel from '@/components/ActionsPanel';
@@ -32,7 +34,10 @@ import {
 } from '@/lib/simulation/agentRunner';
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState<NavTab>('world');
   const [selectedDistrict, setSelectedDistrict] = useState<DistrictId>('khari_baoli');
+  const [selectedAgent, setSelectedAgent] = useState<Agent | undefined>(undefined);
+
   const [isDeployModalOpen, setIsDeployModalOpen] = useState(false);
   const [deployTargetDistrict, setDeployTargetDistrict] = useState<DistrictId>('khari_baoli');
 
@@ -163,83 +168,110 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#140F0D] text-[#D4C4B5] selection:bg-[#D97706] selection:text-black">
-      <Header />
+    <div className="flex h-screen w-screen overflow-hidden bg-[#140F0D] text-[#D4C4B5] selection:bg-[#D97706] selection:text-black">
+      {/* LEFT NAVIGATION SIDEBAR */}
+      <Sidebar
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        agentCount={agents.length}
+      />
 
-      <main className="flex-1 px-4 md:px-6 py-6 space-y-6 max-w-[1600px] mx-auto w-full">
-        {/* SPATIAL WORLD MAP — OLD DELHI */}
-        <OldDelhiMap
-          economy={economyState}
-          agents={agents}
+      {/* MAIN CONTAINER */}
+      <div className="flex-1 flex flex-col h-full overflow-y-auto">
+        <Header />
+
+        <main className="flex-1 px-4 md:px-6 py-6 space-y-6 max-w-[1600px] mx-auto w-full">
+          {/* SPATIAL WORLD MAP — OLD DELHI */}
+          <OldDelhiMap
+            economy={economyState}
+            agents={agents}
+            selectedDistrict={selectedDistrict}
+            onSelectDistrict={(dId) => {
+              setSelectedDistrict(dId);
+              setSelectedAgent(undefined);
+            }}
+            onOpenDeployModal={(dId) => {
+              setDeployTargetDistrict(dId);
+              setIsDeployModalOpen(true);
+            }}
+          />
+
+          {/* CROSS-DISTRICT ARBITRAGE SCANNER */}
+          <DistrictArbitragePanel
+            economy={economyState}
+            onExecuteArbitrage={handleExecuteArbitrage}
+          />
+
+          {/* WORKFORCE AGENT DASHBOARD */}
+          <AgentDashboard
+            agents={agents}
+            onToggleStatus={handleToggleAgentStatus}
+            onFundAgent={handleFundAgent}
+            onOpenDeployModal={() => {
+              setDeployTargetDistrict(selectedDistrict);
+              setIsDeployModalOpen(true);
+            }}
+          />
+
+          {/* MANDI OVERVIEW & COMPANIES */}
+          <EconomyPanel />
+          <CompanyCards />
+
+          {/* MAIN GAME GRID */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left Column */}
+            <div className="lg:col-span-4 space-y-6">
+              <PlayerPanel />
+              <ActionsPanel />
+            </div>
+
+            {/* Center Column */}
+            <div className="lg:col-span-4 space-y-6">
+              <WorldEvent />
+              <CascadeVisualization />
+            </div>
+
+            {/* Right Column */}
+            <div className="lg:col-span-4 space-y-6">
+              <MonaCorpPanel />
+              <ActivityLog />
+            </div>
+          </div>
+        </main>
+
+        {/* FLOATING CONTEXT INSPECTION CARD */}
+        <FloatingContextCard
+          selectedAgent={selectedAgent}
           selectedDistrict={selectedDistrict}
-          onSelectDistrict={setSelectedDistrict}
-          onOpenDeployModal={(dId) => {
+          markets={economyState.markets}
+          onClose={() => {
+            setSelectedAgent(undefined);
+          }}
+          onDeployAgent={(dId) => {
             setDeployTargetDistrict(dId);
             setIsDeployModalOpen(true);
           }}
         />
 
-        {/* CROSS-DISTRICT ARBITRAGE SCANNER */}
-        <DistrictArbitragePanel
-          economy={economyState}
-          onExecuteArbitrage={handleExecuteArbitrage}
+        {/* DEPLOY AGENT MODAL */}
+        <DeployAgentModal
+          isOpen={isDeployModalOpen}
+          defaultDistrict={deployTargetDistrict}
+          playerBalance={playerBalance}
+          onClose={() => setIsDeployModalOpen(false)}
+          onDeploy={handleDeployAgent}
         />
 
-        {/* WORKFORCE AGENT DASHBOARD */}
-        <AgentDashboard
-          agents={agents}
-          onToggleStatus={handleToggleAgentStatus}
-          onFundAgent={handleFundAgent}
-          onOpenDeployModal={() => {
-            setDeployTargetDistrict(selectedDistrict);
-            setIsDeployModalOpen(true);
-          }}
-        />
-
-        {/* MANDI OVERVIEW & COMPANIES */}
-        <EconomyPanel />
-        <CompanyCards />
-
-        {/* MAIN GAME GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column */}
-          <div className="lg:col-span-4 space-y-6">
-            <PlayerPanel />
-            <ActionsPanel />
-          </div>
-
-          {/* Center Column */}
-          <div className="lg:col-span-4 space-y-6">
-            <WorldEvent />
-            <CascadeVisualization />
-          </div>
-
-          {/* Right Column */}
-          <div className="lg:col-span-4 space-y-6">
-            <MonaCorpPanel />
-            <ActivityLog />
-          </div>
-        </div>
-      </main>
-
-      {/* DEPLOY AGENT MODAL */}
-      <DeployAgentModal
-        isOpen={isDeployModalOpen}
-        defaultDistrict={deployTargetDistrict}
-        playerBalance={playerBalance}
-        onClose={() => setIsDeployModalOpen(false)}
-        onDeploy={handleDeployAgent}
-      />
-
-      {/* FOOTER */}
-      <footer className="px-6 py-3 border-t-4 border-[#2A211D] bg-[#1A1412] flex items-center justify-between font-mono text-[10px] text-[#A89F91] font-bold">
-        <span>
-          CHAIN REACTION v0.2.0 — Old Delhi Agent Workforce Edition
-        </span>
-        <span>
-          MONAD TESTNET SIMULATION — LIVE MANDI WORLD 📜
-        </span>
-      </footer>
+        {/* FOOTER */}
+        <footer className="px-6 py-3 border-t-4 border-[#2A211D] bg-[#1A1412] flex items-center justify-between font-mono text-[10px] text-[#A89F91] font-bold">
+          <span>
+            CHAIN REACTION v0.3.0 — Old Delhi Spatial & UI Spec Edition
+          </span>
+          <span>
+            MONAD TESTNET SIMULATION — LIVE MANDI WORLD 📜
+          </span>
+        </footer>
+      </div>
     </div>
   );
 }
