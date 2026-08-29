@@ -7,10 +7,6 @@ export type NavTab =
   | 'world'
   | 'feed'
   | 'identities'
-  | 'bounties'
-  | 'messaging'
-  | 'explore'
-  | 'leaderboards'
   | 'stats'
   | 'storefront';
 
@@ -30,10 +26,6 @@ export default function Sidebar({
     { id: 'world', label: 'World', icon: '🌆' },
     { id: 'feed', label: 'Feed', icon: '📜' },
     { id: 'identities', label: 'Identities', icon: '👤' },
-    { id: 'bounties', label: 'Bounties', icon: '🏷️' },
-    { id: 'messaging', label: 'Messaging', icon: '💬' },
-    { id: 'explore', label: 'Explore', icon: '🧭' },
-    { id: 'leaderboards', label: 'Leaderboards', icon: '🏆' },
     { id: 'stats', label: 'Stats', icon: '📊' },
     { id: 'storefront', label: 'Storefront', icon: '🏪' },
   ];
@@ -84,9 +76,9 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* Bottom CTA Button matching OpenHuman reference */}
+      {/* Bottom CTA Button */}
       <div className="pt-3 border-t border-[#1C1410] space-y-2">
-        <div className="hidden md:block text-[9px] text-[#7A6E65] px-1">Need an Agent?</div>
+        <div className="hidden md:block text-[9px] text-[#7A6E65] px-1">Need a Civilian Agent?</div>
         <button
           onClick={onOpenDeployModal}
           className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg transition transform hover:scale-[1.02] active:scale-95 flex items-center justify-center"

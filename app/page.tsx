@@ -11,11 +11,15 @@ import DistrictArbitragePanel from '@/components/DistrictArbitragePanel';
 import DeployAgentModal from '@/components/DeployAgentModal';
 import AgentSkillModal from '@/components/AgentSkillModal';
 import FloatingContextCard from '@/components/FloatingContextCard';
+import CommunityFeedTab from '@/components/CommunityFeedTab';
+import DistrictStatsTab from '@/components/DistrictStatsTab';
+import StorefrontTab from '@/components/StorefrontTab';
 
 import {
   DistrictId,
   Agent,
   DistrictEconomyState,
+  CommodityType,
 } from '@/lib/types/agentTypes';
 import {
   DISTRICTS,
@@ -29,7 +33,6 @@ import {
 } from '@/lib/simulation/agentRunner';
 
 export default function Home() {
-  // Page default tab set to 'world' so it loads straight into 2.5D Isometric World map on home!
   const [activeTab, setActiveTab] = useState<NavTab>('world');
   const [selectedDistrict, setSelectedDistrict] = useState<DistrictId>('khari_baoli');
   const [selectedAgent, setSelectedAgent] = useState<Agent | undefined>(undefined);
@@ -57,80 +60,69 @@ export default function Home() {
 
   // Master Game Loop — 2.5s tick rate
   useEffect(() => {
-    const interval = setInterval(() => {
-      setEconomyState((prevEconomy) => {
-        const nextEco = tickDistrictEconomy(prevEconomy);
-
-        setAgents((prevAgents) => {
-          let balanceAccumulator = 0;
-          const newLogs: string[] = [];
-
-          const nextAgents = prevAgents.map((ag) => {
-            const res = tickAgent(ag, nextEco);
-            balanceAccumulator += res.playerBalanceDelta;
-            if (res.logMessage) {
-              newLogs.push(res.logMessage);
-            }
-            return res.updatedAgent;
-          });
-
-          if (balanceAccumulator !== 0) {
-            setPlayerBalance((b) => Math.max(0, Math.round((b + balanceAccumulator) * 10) / 10));
-          }
-
-          if (newLogs.length > 0) {
-            setLogs((prev) => [...newLogs, ...prev].slice(0, 30));
-          }
-
-          return nextAgents;
-        });
-
+    const timer = setInterval(() => {
+      // 1. Tick District Economy
+      setEconomyState((prevEco) => {
+        const nextEco = tickDistrictEconomy(prevEco);
         return nextEco;
+      });
+
+      // 2. Tick Each Agent with Civilian Needs & Energy Loop
+      setAgents((prevAgents) => {
+        return prevAgents.map((agent) => {
+          if (agent.status === 'BLOCKED' || agent.status === 'IDLE') return agent;
+          const { updatedAgent, logMessage } = tickAgent(agent, economyState);
+
+          if (logMessage) {
+            setLogs((prev) => [logMessage, ...prev].slice(0, 40));
+          }
+          return updatedAgent;
+        });
       });
     }, 2500);
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => clearInterval(timer);
+  }, [economyState]);
 
+  // Handler: Toggle Agent Status
   const handleToggleAgentStatus = (agentId: string) => {
     setAgents((prev) =>
       prev.map((a) => {
         if (a.id !== agentId) return a;
-        const newStatus =
-          a.status === 'WORKING' || a.status === 'TRAVELLING' ? 'IDLE' : 'WORKING';
+        const newStatus: Agent['status'] = a.status === 'WORKING' ? 'IDLE' : 'WORKING';
         return {
           ...a,
           status: newStatus,
-          speechBubble: newStatus === 'WORKING' ? 'Resumed duties! ⚡' : 'Paused ⏸️',
+          speechBubble: newStatus === 'IDLE' ? 'Taking a short break ⏸️' : 'Resumed work! 🚀',
         };
       })
     );
   };
 
+  // Handler: Fund Agent
   const handleFundAgent = (agentId: string, amount: number) => {
     if (playerBalance < amount) return;
-
-    setPlayerBalance((b) => Math.max(0, b - amount));
+    setPlayerBalance((b) => Math.round((b - amount) * 10) / 10);
     setAgents((prev) =>
       prev.map((a) => {
         if (a.id !== agentId) return a;
         return {
           ...a,
-          availableCapital: a.availableCapital + amount,
-          status: a.status === 'BLOCKED' ? 'WORKING' : a.status,
-          speechBubble: `+${amount} MON payload funded! 💰`,
+          availableCapital: Math.round((a.availableCapital + amount) * 10) / 10,
+          speechBubble: `Received +${amount} MON capital! 💰`,
         };
       })
     );
   };
 
+  // Handler: Deploy Agent
   const handleDeployAgent = (
     newAgentData: Omit<Agent, 'id' | 'createdAt' | 'lastActionTime'>
   ) => {
-    const totalCost = newAgentData.deploymentCost + newAgentData.availableCapital;
-    if (playerBalance < totalCost) return;
+    const cost = newAgentData.deploymentCost + newAgentData.availableCapital;
+    if (playerBalance < cost) return;
 
-    setPlayerBalance((b) => Math.max(0, b - totalCost));
+    setPlayerBalance((b) => Math.round((b - cost) * 10) / 10);
 
     const newAgent: Agent = {
       ...newAgentData,
@@ -140,8 +132,13 @@ export default function Home() {
     };
 
     setAgents((prev) => [...prev, newAgent]);
+    setLogs((prev) => [
+      `Deployed civilian agent ${newAgent.name} (${newAgent.jobType}) in ${DISTRICTS[newAgent.location].name}`,
+      ...prev,
+    ]);
   };
 
+  // Handler: Execute Manual Arbitrage
   const handleExecuteArbitrage = (opp: ArbitrageOpportunity) => {
     const cost = opp.buyPrice * 3 + opp.transportCost;
     if (playerBalance < cost) return;
@@ -150,10 +147,37 @@ export default function Home() {
     const profit = Math.round((yieldAmount - cost) * 10) / 10;
 
     setPlayerBalance((b) => Math.round((b + profit) * 10) / 10);
+    setLogs((prev) => [
+      `Dispatched manual freight haul: ${opp.commodity} from ${DISTRICTS[opp.sourceDistrict].name} to ${DISTRICTS[opp.targetDistrict].name} (+${profit} MON)`,
+      ...prev,
+    ]);
+  };
+
+  // Handler: Direct Commodity Trade in Storefront
+  const handleDirectTrade = (commodity: CommodityType, amount: number, isBuy: boolean) => {
+    const market = economyState.markets[commodity];
+    if (!market) return;
+
+    const price = market.districtPrices.khari_baoli || market.basePrice;
+    const totalCost = price * amount;
+    if (isBuy) {
+      if (playerBalance < totalCost) return;
+      setPlayerBalance((b) => Math.round((b - totalCost) * 10) / 10);
+      setLogs((prev) => [
+        `Purchased ${amount} units of wholesale ${market.name} for ${totalCost} MON`,
+        ...prev,
+      ]);
+    } else {
+      setPlayerBalance((b) => Math.round((b + totalCost) * 10) / 10);
+      setLogs((prev) => [
+        `Sold ${amount} units of wholesale ${market.name} for ${totalCost} MON`,
+        ...prev,
+      ]);
+    }
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#0A0706] text-[#D4C4B5] selection:bg-[#D97706] selection:text-black">
+    <div className="flex h-screen w-screen overflow-hidden bg-[#0A0706] text-[#D4C4B5] selection:bg-[#D97706] selection:text-black font-mono">
       {/* LEFT NAVIGATION SIDEBAR */}
       <Sidebar
         activeTab={activeTab}
@@ -172,42 +196,53 @@ export default function Home() {
             onJoinWorld={() => setActiveTab('world')}
           />
 
-          {/* TAB CONTENT: WORLD MAP VIEW VS BOUNTY GRID */}
+          {/* DYNAMIC TAB SWITCHING VIEW */}
           {activeTab === 'world' || activeTab === 'home' ? (
-            <OldDelhiMap
-              economy={economyState}
-              agents={agents}
-              selectedDistrict={selectedDistrict}
-              onSelectDistrict={(dId) => {
-                setSelectedDistrict(dId);
-                setSelectedAgent(undefined);
-              }}
-              onOpenDeployModal={(dId) => {
-                setDeployTargetDistrict(dId);
-                setIsDeployModalOpen(true);
-              }}
-            />
-          ) : (
+            <>
+              <OldDelhiMap
+                economy={economyState}
+                agents={agents}
+                selectedDistrict={selectedDistrict}
+                onSelectDistrict={(dId) => {
+                  setSelectedDistrict(dId);
+                  setSelectedAgent(undefined);
+                }}
+                onOpenDeployModal={(dId) => {
+                  setDeployTargetDistrict(dId);
+                  setIsDeployModalOpen(true);
+                }}
+              />
+
+              <DistrictArbitragePanel
+                economy={economyState}
+                onExecuteArbitrage={handleExecuteArbitrage}
+              />
+
+              <AgentDashboard
+                agents={agents}
+                onToggleStatus={handleToggleAgentStatus}
+                onFundAgent={handleFundAgent}
+                onOpenDeployModal={() => setIsDeployModalOpen(true)}
+                onOpenSkillModal={() => setIsSkillModalOpen(true)}
+              />
+            </>
+          ) : activeTab === 'feed' ? (
+            <CommunityFeedTab logs={logs} />
+          ) : activeTab === 'identities' ? (
             <BountyAgentGrid
               agents={agents}
               onOpenDeployModal={() => setIsDeployModalOpen(true)}
               onOpenSkillModal={() => setIsSkillModalOpen(true)}
             />
-          )}
-
-          {/* DYNAMIC ARBITRAGE & WORKFORCE DASHBOARD */}
-          <DistrictArbitragePanel
-            economy={economyState}
-            onExecuteArbitrage={handleExecuteArbitrage}
-          />
-
-          <AgentDashboard
-            agents={agents}
-            onToggleStatus={handleToggleAgentStatus}
-            onFundAgent={handleFundAgent}
-            onOpenDeployModal={() => setIsDeployModalOpen(true)}
-            onOpenSkillModal={() => setIsSkillModalOpen(true)}
-          />
+          ) : activeTab === 'stats' ? (
+            <DistrictStatsTab economy={economyState} />
+          ) : activeTab === 'storefront' ? (
+            <StorefrontTab
+              markets={economyState.markets}
+              playerBalance={playerBalance}
+              onTrade={handleDirectTrade}
+            />
+          ) : null}
         </main>
 
         {/* FLOATING CONTEXT CARD */}
