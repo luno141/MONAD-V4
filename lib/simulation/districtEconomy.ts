@@ -17,6 +17,9 @@ export const DISTRICTS: Record<DistrictId, DistrictInfo> = {
     primaryCommodities: ['spices', 'grain', 'fuel'],
     color: '#D97706', // Amber
     icon: '🌶️',
+    laborPool: 450,
+    totalWagesPaid: 1250,
+    publicTreasury: 3400,
   },
   chandni_chowk: {
     id: 'chandni_chowk',
@@ -26,6 +29,9 @@ export const DISTRICTS: Record<DistrictId, DistrictInfo> = {
     primaryCommodities: ['textiles', 'labor', 'grain'],
     color: '#3B82F6', // Blue
     icon: '🧵',
+    laborPool: 680,
+    totalWagesPaid: 1890,
+    publicTreasury: 4100,
   },
   jama_masjid: {
     id: 'jama_masjid',
@@ -35,6 +41,9 @@ export const DISTRICTS: Record<DistrictId, DistrictInfo> = {
     primaryCommodities: ['food', 'spices', 'labor'],
     color: '#10B981', // Emerald
     icon: '🍛',
+    laborPool: 520,
+    totalWagesPaid: 1420,
+    publicTreasury: 2950,
   },
 };
 
@@ -101,123 +110,90 @@ export const DISTANCE_MATRIX: Record<DistrictId, Record<DistrictId, number>> = {
   jama_masjid: { khari_baoli: 2.8, chandni_chowk: 1.8, jama_masjid: 0 },
 };
 
-export function getTransportCost(from: DistrictId, to: DistrictId, baseRate = 0.5): number {
+export function getTransportCost(from: DistrictId, to: DistrictId): number {
   const dist = DISTANCE_MATRIX[from][to];
-  return Math.round(dist * baseRate * 10) / 10;
+  return Math.round(dist * 0.5 * 10) / 10;
 }
 
 export interface ArbitrageOpportunity {
+  id: string;
   commodity: CommodityType;
-  commodityName: string;
-  symbol: string;
   sourceDistrict: DistrictId;
   targetDistrict: DistrictId;
   buyPrice: number;
   sellPrice: number;
-  spread: number;
+  profitMargin: number;
+  distance: number;
   transportCost: number;
-  netSpread: number;
+  netProfit: number;
   roiPct: number;
 }
 
-export function findArbitrageOpportunities(
-  state: DistrictEconomyState
+export function scanArbitrageOpportunities(
+  economy: DistrictEconomyState
 ): ArbitrageOpportunity[] {
   const opportunities: ArbitrageOpportunity[] = [];
-  const districts: DistrictId[] = ['khari_baoli', 'chandni_chowk', 'jama_masjid'];
+  const districtIds: DistrictId[] = ['khari_baoli', 'chandni_chowk', 'jama_masjid'];
 
-  Object.values(state.markets).forEach((market) => {
-    districts.forEach((from) => {
-      districts.forEach((to) => {
-        if (from === to) return;
-        const buyPrice = market.districtPrices[from];
-        const sellPrice = market.districtPrices[to];
-        const transportCost = getTransportCost(from, to, state.transportCostPerDistance);
-        const spread = sellPrice - buyPrice;
-        const netSpread = spread - transportCost;
+  Object.values(economy.markets).forEach((market) => {
+    for (let i = 0; i < districtIds.length; i++) {
+      for (let j = 0; j < districtIds.length; j++) {
+        if (i === j) continue;
+        const source = districtIds[i];
+        const target = districtIds[j];
 
-        if (netSpread > 0.5) {
-          const roiPct = Math.round((netSpread / buyPrice) * 100);
-          opportunities.push({
-            commodity: market.id,
-            commodityName: market.name,
-            symbol: market.symbol,
-            sourceDistrict: from,
-            targetDistrict: to,
-            buyPrice,
-            sellPrice,
-            spread: Math.round(spread * 10) / 10,
-            transportCost,
-            netSpread: Math.round(netSpread * 10) / 10,
-            roiPct,
-          });
+        const buyP = market.districtPrices[source];
+        const sellP = market.districtPrices[target];
+
+        if (sellP > buyP) {
+          const distance = DISTANCE_MATRIX[source][target];
+          const transportCost = getTransportCost(source, target);
+          const rawProfit = sellP - buyP;
+          const netP = Math.round((rawProfit - transportCost) * 10) / 10;
+          const roi = Math.round((netP / buyP) * 100);
+
+          if (netP > 0.5) {
+            opportunities.push({
+              id: `${market.id}-${source}-${target}`,
+              commodity: market.id,
+              sourceDistrict: source,
+              targetDistrict: target,
+              buyPrice: buyP,
+              sellPrice: sellP,
+              profitMargin: rawProfit,
+              distance,
+              transportCost,
+              netProfit: netP,
+              roiPct: roi,
+            });
+          }
         }
-      });
-    });
+      }
+    }
   });
 
-  return opportunities.sort((a, b) => b.netSpread - a.netSpread);
+  return opportunities.sort((a, b) => b.netProfit - a.netProfit);
 }
 
-export function calculateDistrictPrice(
-  basePrice: number,
-  supply: number,
-  demand: number,
-  eventMultiplier = 1.0
-): number {
-  const ratio = Math.max(0.2, Math.min(5.0, demand / Math.max(1, supply)));
-  const calculated = basePrice * Math.sqrt(ratio) * eventMultiplier;
-  return Math.max(1, Math.round(calculated * 10) / 10);
-}
-
-export function tickDistrictEconomy(
-  state: DistrictEconomyState
-): DistrictEconomyState {
-  const nextMarkets: Record<CommodityType, CommodityMarketData> = { ...state.markets };
-  const districts: DistrictId[] = ['khari_baoli', 'chandni_chowk', 'jama_masjid'];
+export function tickDistrictEconomy(prev: DistrictEconomyState): DistrictEconomyState {
+  const nextMarkets = { ...prev.markets };
 
   Object.keys(nextMarkets).forEach((key) => {
-    const commKey = key as CommodityType;
-    const market = { ...nextMarkets[commKey] };
-    const nextPrices = { ...market.districtPrices };
-    const nextSupply = { ...market.districtSupply };
-    const nextDemand = { ...market.districtDemand };
+    const comKey = key as CommodityType;
+    const m = { ...nextMarkets[comKey] };
+    const nextPrices = { ...m.districtPrices };
 
-    districts.forEach((dId) => {
-      // Natural organic oscillation +/- 3%
-      const supplyDelta = (Math.random() - 0.48) * 0.05;
-      const demandDelta = (Math.random() - 0.48) * 0.05;
-
-      nextSupply[dId] = Math.max(50, Math.round(nextSupply[dId] * (1 + supplyDelta)));
-      nextDemand[dId] = Math.max(50, Math.round(nextDemand[dId] * (1 + demandDelta)));
-
-      let eventMult = 1.0;
-      if (
-        state.activeEvent &&
-        (!state.activeEvent.affectedDistrict || state.activeEvent.affectedDistrict === dId) &&
-        (!state.activeEvent.affectedCommodity || state.activeEvent.affectedCommodity === commKey)
-      ) {
-        eventMult = state.activeEvent.priceMultiplier;
-      }
-
-      nextPrices[dId] = calculateDistrictPrice(
-        market.basePrice,
-        nextSupply[dId],
-        nextDemand[dId],
-        eventMult
-      );
+    (Object.keys(nextPrices) as DistrictId[]).forEach((dId) => {
+      const delta = (Math.random() - 0.49) * 0.4;
+      nextPrices[dId] = Math.max(3, Math.round((nextPrices[dId] + delta) * 10) / 10);
     });
 
-    nextMarkets[commKey] = {
-      ...market,
-      districtPrices: nextPrices,
-      districtSupply: nextSupply,
-      districtDemand: nextDemand,
-    };
+    m.districtPrices = nextPrices;
+    nextMarkets[comKey] = m;
   });
 
   return {
-    ...state,
+    ...prev,
     markets: nextMarkets,
   };
 }

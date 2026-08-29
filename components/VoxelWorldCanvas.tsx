@@ -686,22 +686,22 @@ export default function VoxelWorldCanvas({
       ctx.font = 'bold 6px monospace';
       ctx.fillText(name, cx, cy + 10.5);
 
-      // Speech bubble (only show first 24 chars)
+      // Speech bubble (show up to 32 chars for full civilian dialogue)
       if (agent.speechBubble) {
-        const txt = agent.speechBubble.length > 24
-          ? agent.speechBubble.slice(0, 22) + '…'
+        const txt = agent.speechBubble.length > 32
+          ? agent.speechBubble.slice(0, 30) + '…'
           : agent.speechBubble;
-        ctx.font = 'bold 6px monospace';
-        const bw = Math.min(ctx.measureText(txt).width + 10, 110);
+        ctx.font = 'bold 6.5px monospace';
+        const bw = Math.min(ctx.measureText(txt).width + 10, 130);
         const bx = cx - bw / 2;
-        const by = cy - 22;
+        const by = cy - 23;
 
         ctx.fillStyle = '#FFFBEB';
         ctx.beginPath();
-        ctx.roundRect(bx, by, bw, 12, 4);
+        ctx.roundRect(bx, by, bw, 13, 4);
         ctx.fill();
         ctx.strokeStyle = z.color;
-        ctx.lineWidth = 0.7;
+        ctx.lineWidth = 0.8;
         ctx.stroke();
         // Nub
         ctx.fillStyle = '#FFFBEB';

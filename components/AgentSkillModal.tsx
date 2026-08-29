@@ -59,8 +59,9 @@ export default function AgentSkillModal({
     onDeployFromSkill({
       ownerPlayerId: 'player-1',
       name,
-      avatar: jobType === 'COURIER' ? '🛵' : jobType === 'SHOPKEEPER' ? '🏪' : '👳🏽‍♂️',
+      avatar: jobType === 'COURIER' ? '🛺' : jobType === 'SHOPKEEPER' ? '🏪' : jobType === 'CHAIWALA' ? '☕' : jobType === 'CRAFTSMAN' ? '🧵' : '👳🏽‍♂️',
       jobType,
+      civilianRole: `${jobType} (SKILL.md Spec)`,
       level: 1,
       experience: 0,
       location,
@@ -69,6 +70,8 @@ export default function AgentSkillModal({
       operatingCost: 0.2,
       deploymentCost: 5,
       availableCapital: capital,
+      energyLevel: 90,
+      dailyLivingCost: 0.15,
       currentTask: `Executing SKILL.md (${commodity} strategy)`,
       contract: {
         targetCommodity: commodity,

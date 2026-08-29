@@ -2,25 +2,29 @@
 
 import React from 'react';
 import { DistrictEconomyState } from '@/lib/types/agentTypes';
-import { findArbitrageOpportunities, DISTRICTS } from '@/lib/simulation/districtEconomy';
+import {
+  scanArbitrageOpportunities,
+  ArbitrageOpportunity,
+  DISTRICTS,
+} from '@/lib/simulation/districtEconomy';
 
 interface DistrictArbitragePanelProps {
   economy: DistrictEconomyState;
-  onExecuteArbitrage: (opp: ReturnType<typeof findArbitrageOpportunities>[0]) => void;
+  onExecuteArbitrage: (opp: ArbitrageOpportunity) => void;
 }
 
 export default function DistrictArbitragePanel({
   economy,
   onExecuteArbitrage,
 }: DistrictArbitragePanelProps) {
-  const opportunities = findArbitrageOpportunities(economy);
+  const opportunities = scanArbitrageOpportunities(economy);
 
   return (
-    <div className="w-full rounded-xl border-4 border-[#2A211D] bg-[#1A1412] p-4 shadow-2xl space-y-3 font-mono">
+    <div className="w-full rounded-xl border-4 border-[#2A211D] bg-[#1A1412] p-4 shadow-2xl space-y-3 font-mono select-none">
       {/* Header */}
       <div className="flex items-center justify-between border-b-2 border-[#3D3029] pb-2">
         <h3 className="text-sm font-black text-[#F3E5AB] flex items-center gap-2">
-          <span>⚡</span> CROSS-DISTRICT ARBITRAGE OPPORTUNITIES
+          <span>⚡</span> CROSS-DISTRICT CIVILIAN ARBITRAGE OPPORTUNITIES
         </h3>
         <span className="px-2 py-0.5 rounded text-[10px] bg-[#D97706]/20 text-[#F59E0B] border border-[#D97706] font-bold">
           {opportunities.length} SPREADS DETECTED
@@ -31,7 +35,7 @@ export default function DistrictArbitragePanel({
       <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
         {opportunities.length === 0 ? (
           <div className="p-4 text-center text-[11px] text-[#A89F91] bg-[#120D0B] rounded border border-[#3D3029]">
-            No profitable arbitrage spreads right now. Prices are balanced.
+            No profitable arbitrage spreads right now. Prices are balanced across Mandi hubs.
           </div>
         ) : (
           opportunities.map((opp, idx) => {
@@ -40,15 +44,15 @@ export default function DistrictArbitragePanel({
 
             return (
               <div
-                key={`${opp.commodity}-${opp.sourceDistrict}-${opp.targetDistrict}-${idx}`}
+                key={`${opp.id}-${idx}`}
                 className="p-2.5 rounded-lg bg-[#1E1714] border border-[#3D3029] hover:border-[#D97706] transition flex flex-wrap items-center justify-between gap-2 text-[11px]"
               >
                 {/* Commodity & Route */}
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">{opp.symbol}</span>
+                  <span className="text-xl">📦</span>
                   <div>
-                    <div className="font-bold text-[#F3E5AB]">
-                      {opp.commodityName}
+                    <div className="font-bold text-[#F3E5AB] uppercase">
+                      {opp.commodity}
                     </div>
                     <div className="text-[10px] text-[#A89F91] flex items-center gap-1">
                       <span style={{ color: sourceInfo.color }}>
@@ -66,10 +70,10 @@ export default function DistrictArbitragePanel({
                 <div className="flex items-center gap-3">
                   <div className="text-right">
                     <div className="text-emerald-400 font-black">
-                      +{opp.netSpread} MON Net
+                      +{opp.netProfit} MON Net
                     </div>
                     <div className="text-[9px] text-[#A89F91]">
-                      ROI: +{opp.roiPct}% (Fee: {opp.transportCost} MON)
+                      ROI: +{opp.roiPct}% (Freight: {opp.transportCost} MON)
                     </div>
                   </div>
 
@@ -77,7 +81,7 @@ export default function DistrictArbitragePanel({
                     onClick={() => onExecuteArbitrage(opp)}
                     className="px-3 py-1 bg-[#D97706] hover:bg-[#F59E0B] text-black font-black text-[10px] rounded transition shadow"
                   >
-                    HAUL NOW
+                    DISPATCH HAUL
                   </button>
                 </div>
               </div>

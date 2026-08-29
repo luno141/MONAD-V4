@@ -21,17 +21,18 @@ export default function AgentDashboard({
   const totalNetProfit = Math.round(agents.reduce((sum, a) => sum + a.netProfit, 0) * 10) / 10;
   const totalExpenses = Math.round(agents.reduce((sum, a) => sum + a.totalExpenses, 0) * 10) / 10;
   const totalGross = Math.round(agents.reduce((sum, a) => sum + a.grossEarnings, 0) * 10) / 10;
+  const totalChaiBought = agents.reduce((sum, a) => sum + (a.totalChaiBought || 0), 0);
 
   return (
-    <div className="w-full rounded-2xl border-4 border-[#2A211D] bg-[#16110F] p-4 shadow-2xl space-y-4 font-mono">
+    <div className="w-full rounded-2xl border-4 border-[#2A211D] bg-[#16110F] p-4 shadow-2xl space-y-4 font-mono select-none">
       {/* Header & Metrics */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-[#3D3029] pb-3">
         <div>
           <h3 className="text-base font-black text-[#F3E5AB] flex items-center gap-2">
-            <span>⚙️</span> AUTONOMOUS WORKFORCE DASHBOARD
+            <span>👳🏽‍♂️ ☕ 🛺 🧵 💪</span> WORKING CLASS CIVILIAN ECONOMY
           </h3>
           <p className="text-[11px] text-[#A89F91]">
-            Deploy personalized autonomous agents with optimized micro-payload capital.
+            Simulated Old Delhi workforce of merchants, rickshaw porters, weavers, tea vendors & warehouse coolies.
           </p>
         </div>
 
@@ -47,26 +48,31 @@ export default function AgentDashboard({
             onClick={onOpenDeployModal}
             className="px-4 py-2 bg-[#D97706] hover:bg-[#F59E0B] text-black font-mono font-black text-xs rounded-xl shadow-lg transition transform hover:scale-105 active:scale-95 flex items-center gap-1.5"
           >
-            <span>🤖</span> DEPLOY AGENT
+            <span>🤖</span> DEPLOY CIVILIAN
           </button>
         </div>
       </div>
 
       {/* Aggregate Statistics Ribbon */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 font-mono">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 font-mono text-xs">
         <div className="p-2.5 rounded-lg bg-[#261E1A] border border-[#4A3B32]">
-          <span className="text-[10px] text-[#A89F91]">ACTIVE WORKFORCE</span>
-          <div className="text-lg font-black text-[#F3E5AB]">{agents.length} AGENTS</div>
+          <span className="text-[10px] text-[#A89F91]">CIVILIAN WORKFORCE</span>
+          <div className="text-lg font-black text-[#F3E5AB]">{agents.length} CIVILIANS</div>
         </div>
 
         <div className="p-2.5 rounded-lg bg-[#261E1A] border border-[#4A3B32]">
-          <span className="text-[10px] text-[#A89F91]">GROSS EARNINGS</span>
+          <span className="text-[10px] text-[#A89F91]">GROSS REVENUE</span>
           <div className="text-lg font-black text-emerald-400">+{totalGross} MON</div>
         </div>
 
         <div className="p-2.5 rounded-lg bg-[#261E1A] border border-[#4A3B32]">
-          <span className="text-[10px] text-[#A89F91]">TOTAL EXPENSES</span>
+          <span className="text-[10px] text-[#A89F91]">LIVING & EXPENSES</span>
           <div className="text-lg font-black text-amber-500">-{totalExpenses} MON</div>
+        </div>
+
+        <div className="p-2.5 rounded-lg bg-[#261E1A] border border-[#4A3B32]">
+          <span className="text-[10px] text-[#A89F91]">CHAI STALL SALES</span>
+          <div className="text-lg font-black text-blue-400">{totalChaiBought} CUPS ☕</div>
         </div>
 
         <div className="p-2.5 rounded-lg bg-[#261E1A] border border-[#4A3B32]">
@@ -85,6 +91,7 @@ export default function AgentDashboard({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {agents.map((agent) => {
           const isBlocked = agent.status === 'BLOCKED';
+          const energy = agent.energyLevel ?? 80;
 
           return (
             <div
@@ -98,18 +105,18 @@ export default function AgentDashboard({
               {/* Card Header */}
               <div className="flex items-start justify-between gap-2 border-b border-[#332721] pb-2">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-full bg-[#2A1F19] border-2 border-[#D97706] flex items-center justify-center text-xl shadow">
+                  <div className="w-11 h-11 rounded-full bg-[#2A1F19] border-2 border-[#D97706] flex items-center justify-center text-2xl shadow">
                     {agent.avatar}
                   </div>
                   <div>
                     <h4 className="font-mono text-sm font-black text-[#F3E5AB]">
                       {agent.name}
                     </h4>
-                    <div className="flex items-center gap-2 text-[10px] font-mono">
-                      <span className="px-1.5 py-0.5 rounded bg-[#D97706]/20 text-[#F59E0B] font-bold border border-[#D97706]">
-                        {agent.jobType}
-                      </span>
-                      <span className="text-[#A89F91]">Lvl {agent.level} ({agent.efficiency}% Eff.)</span>
+                    <div className="text-[11px] font-bold text-[#F59E0B]">
+                      {agent.civilianRole || agent.jobType}
+                    </div>
+                    <div className="text-[10px] text-[#A89F91]">
+                      Lvl {agent.level} • {agent.efficiency}% Labor Efficiency
                     </div>
                   </div>
                 </div>
@@ -131,35 +138,48 @@ export default function AgentDashboard({
               </div>
 
               {/* Card Body & Stats */}
-              <div className="py-2.5 space-y-1.5 font-mono text-[11px]">
+              <div className="py-2.5 space-y-2 font-mono text-[11px]">
+                {/* Energy Bar */}
+                <div>
+                  <div className="flex justify-between text-[10px] text-[#A89F91] mb-1">
+                    <span>Civilian Energy:</span>
+                    <span className="text-[#F3E5AB] font-bold">{energy}%</span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-[#120E0C] border border-[#2D231D] overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-500 ${
+                        energy > 60
+                          ? 'bg-emerald-500'
+                          : energy > 30
+                          ? 'bg-amber-500'
+                          : 'bg-red-500'
+                      }`}
+                      style={{ width: `${energy}%` }}
+                    />
+                  </div>
+                </div>
+
                 <div className="flex justify-between text-[#A89F91]">
-                  <span>Current Location:</span>
+                  <span>District Base:</span>
                   <span className="text-[#D4C4B5] font-bold">{agent.location}</span>
                 </div>
 
                 <div className="flex justify-between text-[#A89F91]">
-                  <span>Current Task:</span>
-                  <span className="text-[#F3E5AB] font-bold text-right truncate max-w-[200px]">
+                  <span>Current Work Task:</span>
+                  <span className="text-[#F3E5AB] font-bold text-right truncate max-w-[210px]">
                     {agent.currentTask}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-[#A89F91]">
-                  <span>Available Capital:</span>
+                  <span>Working Capital:</span>
                   <span className="text-emerald-400 font-bold">
                     {Math.round(agent.availableCapital * 10) / 10} MON
                   </span>
                 </div>
 
-                <div className="flex justify-between text-[#A89F91]">
-                  <span>Contract Rules:</span>
-                  <span className="text-[#D4C4B5] text-[10px]">
-                    Buy &lt; {agent.contract.buyBelow} MON | Sell &gt; {agent.contract.sellAbove} MON
-                  </span>
-                </div>
-
                 <div className="flex justify-between text-[#A89F91] border-t border-[#332721] pt-1.5">
-                  <span>Net Agent Profit:</span>
+                  <span>Net Earnings:</span>
                   <span
                     className={`font-black ${
                       agent.netProfit >= 0 ? 'text-emerald-400' : 'text-red-400'
@@ -188,8 +208,8 @@ export default function AgentDashboard({
                   }`}
                 >
                   {agent.status === 'WORKING' || agent.status === 'TRAVELLING'
-                    ? 'PAUSE'
-                    : 'RESUME'}
+                    ? 'PAUSE WORK'
+                    : 'RESUME WORK'}
                 </button>
               </div>
             </div>

@@ -20,9 +20,22 @@ interface DeployAgentModalProps {
 
 const AVATARS: Record<AgentJobType, string[]> = {
   TRADER: ['👳🏽‍♂️', '🧔🏽‍♂️', '👨🏽‍💼'],
-  COURIER: ['🛵', '🛺', '🚚'],
+  COURIER: ['🛺', '🛵', '🚚'],
   SHOPKEEPER: ['🏪', '🏬', '👨🏽‍🍳'],
   BROKER: ['🤝', '💼', '📊'],
+  CHAIWALA: ['☕', '🍵', '🥪'],
+  CRAFTSMAN: ['🧵', '🪡', '🎨'],
+  HAMMAL: ['💪', '📦', '🪜'],
+};
+
+const CIVILIAN_TITLES: Record<AgentJobType, string> = {
+  TRADER: 'Mandi Spice Wholesaler',
+  COURIER: 'Cycle Rickshaw Cargo Freight Hauler',
+  SHOPKEEPER: 'Bazaar Retail Stallholder',
+  BROKER: 'Mandi Arbitrage Broker',
+  CHAIWALA: 'Roadside Tea & Samosa Vendor',
+  CRAFTSMAN: 'Traditional Silk Loom Weaver',
+  HAMMAL: 'Warehouse Heavy Sack Loader',
 };
 
 export default function DeployAgentModal({
@@ -32,17 +45,17 @@ export default function DeployAgentModal({
   onClose,
   onDeploy,
 }: DeployAgentModalProps) {
-  const [name, setName] = useState('Salim the Auto-Trader');
-  const [jobType, setJobType] = useState<AgentJobType>('TRADER');
+  const [name, setName] = useState('Chachi Shanti');
+  const [jobType, setJobType] = useState<AgentJobType>('CHAIWALA');
   const [district, setDistrict] = useState<DistrictId>(defaultDistrict);
-  const [commodity, setCommodity] = useState<CommodityType>('spices');
+  const [commodity, setCommodity] = useState<CommodityType>('food');
   const [buyBelow, setBuyBelow] = useState(11);
   const [sellAbove, setSellAbove] = useState(15);
-  const [capital, setCapital] = useState(10); // Micro-payload: 10 MON default
+  const [capital, setCapital] = useState(10);
 
   if (!isOpen) return null;
 
-  const deploymentFee = 5; // Minimal 5 MON deployment fee
+  const deploymentFee = 5;
   const totalRequired = deploymentFee + capital;
   const canAfford = playerBalance >= totalRequired;
 
@@ -68,33 +81,36 @@ export default function DeployAgentModal({
       name,
       avatar,
       jobType,
+      civilianRole: CIVILIAN_TITLES[jobType],
       level: 1,
       experience: 0,
       location: district,
       status: 'WORKING',
-      efficiency: 80,
-      operatingCost: 1.5,
+      efficiency: 82,
+      operatingCost: 0.15,
       deploymentCost: deploymentFee,
       availableCapital: capital,
-      currentTask: `Initialized ${jobType} in ${DISTRICTS[district].name}`,
+      energyLevel: 90,
+      dailyLivingCost: 0.15,
+      currentTask: `Initialized ${CIVILIAN_TITLES[jobType]} in ${DISTRICTS[district].name}`,
       contract,
       inventory: {},
       grossEarnings: 0,
       totalExpenses: 0,
       netProfit: 0,
-      speechBubble: `Deployed in ${DISTRICTS[district].name}! Ready for trade 🚀`,
+      speechBubble: `Deployed in ${DISTRICTS[district].name}! Starting civilian work 🚀`,
     });
 
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in font-mono">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in font-mono select-none">
       <div className="relative w-full max-w-lg rounded-xl border-4 border-[#2A211D] bg-[#1A1412] p-5 shadow-2xl space-y-4 text-[#D4C4B5]">
         {/* Header */}
         <div className="flex items-center justify-between border-b-2 border-[#3D3029] pb-3">
           <h3 className="text-lg font-black text-[#F3E5AB] flex items-center gap-2">
-            <span>🤖</span> DEPLOY WORKFORCE AGENT
+            <span>👳🏽‍♂️</span> DEPLOY CIVILIAN AGENT
           </h3>
           <button
             onClick={onClose}
@@ -108,7 +124,7 @@ export default function DeployAgentModal({
           {/* Agent Name */}
           <div>
             <label className="block text-[11px] text-[#A89F91] font-bold mb-1">
-              AGENT NAME
+              CIVILIAN AGENT NAME
             </label>
             <input
               type="text"
@@ -122,14 +138,30 @@ export default function DeployAgentModal({
           {/* Job Selection */}
           <div>
             <label className="block text-[11px] text-[#A89F91] font-bold mb-1">
-              SELECT JOB ROLE
+              SELECT CIVILIAN OCCUPATION
             </label>
-            <div className="grid grid-cols-2 gap-2">
-              {(['TRADER', 'COURIER', 'SHOPKEEPER', 'BROKER'] as AgentJobType[]).map((job) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {(
+                [
+                  'TRADER',
+                  'COURIER',
+                  'CHAIWALA',
+                  'CRAFTSMAN',
+                  'HAMMAL',
+                  'SHOPKEEPER',
+                ] as AgentJobType[]
+              ).map((job) => (
                 <button
                   type="button"
                   key={job}
-                  onClick={() => setJobType(job)}
+                  onClick={() => {
+                    setJobType(job);
+                    if (job === 'CHAIWALA') setName('Chachi Shanti');
+                    else if (job === 'COURIER') setName('Kabir Rickshaw Puller');
+                    else if (job === 'CRAFTSMAN') setName('Master Ramdas');
+                    else if (job === 'HAMMAL') setName('Bholu Loader');
+                    else if (job === 'TRADER') setName('Salim Spice Wholesaler');
+                  }}
                   className={`p-2 rounded border text-left flex items-center gap-2 ${
                     jobType === job
                       ? 'border-[#F59E0B] bg-[#2E211A] text-[#F59E0B] font-bold'
@@ -137,10 +169,13 @@ export default function DeployAgentModal({
                   }`}
                 >
                   <span className="text-base">{AVATARS[job][0]}</span>
-                  <span>{job}</span>
+                  <span className="text-[10px] uppercase truncate">{job}</span>
                 </button>
               ))}
             </div>
+            <p className="text-[10px] text-[#F59E0B] mt-1 italic">
+              Role: {CIVILIAN_TITLES[jobType]}
+            </p>
           </div>
 
           {/* District & Commodity */}
@@ -164,7 +199,7 @@ export default function DeployAgentModal({
 
             <div>
               <label className="block text-[11px] text-[#A89F91] font-bold mb-1">
-                TARGET COMMODITY
+                PRIMARY COMMODITY
               </label>
               <select
                 value={commodity}
@@ -174,44 +209,17 @@ export default function DeployAgentModal({
                 <option value="spices">🌶️ Spices</option>
                 <option value="grain">🌾 Grain</option>
                 <option value="textiles">🧵 Textiles</option>
-                <option value="food">🍛 Food</option>
+                <option value="food">🍛 Food/Tea</option>
                 <option value="fuel">⛽ Fuel</option>
                 <option value="labor">🛠️ Labor</option>
               </select>
             </div>
           </div>
 
-          {/* Rule Bounds */}
-          <div className="grid grid-cols-2 gap-3 p-3 bg-[#120D0B] rounded border border-[#3D3029]">
-            <div>
-              <label className="block text-[10px] text-[#A89F91] font-bold mb-1">
-                BUY BELOW (MON)
-              </label>
-              <input
-                type="number"
-                value={buyBelow}
-                onChange={(e) => setBuyBelow(Number(e.target.value))}
-                className="w-full px-2 py-1 bg-[#1E1714] border border-[#4A3B32] rounded text-emerald-400 font-bold"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[10px] text-[#A89F91] font-bold mb-1">
-                SELL ABOVE (MON)
-              </label>
-              <input
-                type="number"
-                value={sellAbove}
-                onChange={(e) => setSellAbove(Number(e.target.value))}
-                className="w-full px-2 py-1 bg-[#1E1714] border border-[#4A3B32] rounded text-amber-400 font-bold"
-              />
-            </div>
-          </div>
-
-          {/* Capital Allocation Slider */}
+          {/* Capital Allocation */}
           <div>
             <label className="block text-[11px] text-[#A89F91] font-bold mb-1">
-              OPTIMIZED MICRO PAYLOAD: {capital} MON
+              OPTIMIZED WORKING CAPITAL: {capital} MON
             </label>
             <input
               type="range"
@@ -222,9 +230,6 @@ export default function DeployAgentModal({
               onChange={(e) => setCapital(Number(e.target.value))}
               className="w-full accent-[#D97706]"
             />
-            <p className="text-[9px] text-[#A89F91] mt-0.5">
-              * Minimal capital payload strategy prevents liquidity trapping.
-            </p>
           </div>
 
           {/* Summary & Cost Breakdown */}
@@ -255,7 +260,7 @@ export default function DeployAgentModal({
                 : 'bg-gray-700 text-gray-400 cursor-not-allowed'
             }`}
           >
-            {canAfford ? 'CONFIRM AGENT DEPLOYMENT' : 'INSUFFICIENT PLAYER MON BALANCE'}
+            {canAfford ? 'CONFIRM CIVILIAN DEPLOYMENT' : 'INSUFFICIENT PLAYER MON BALANCE'}
           </button>
         </form>
       </div>

@@ -44,12 +44,15 @@ export default function Home() {
     districts: DISTRICTS,
     markets: INITIAL_MARKETS,
     transportCostPerDistance: 0.5,
+    totalCivilianWages: 4560,
+    totalChaiTransactions: 184,
+    totalCargoHauls: 92,
   });
 
   const [agents, setAgents] = useState<Agent[]>(INITIAL_PLAYER_AGENTS);
   const [logs, setLogs] = useState<string[]>([
-    'System initialized — Khari Baoli, Chandni Chowk & Jama Masjid online.',
-    'Autonomous agents active: Rafi (Trader) & Kabir (Courier).',
+    'Working Class Civilian Economy initialized — Khari Baoli, Chandni Chowk & Jama Masjid online.',
+    'Autonomous civilians active: Mandi Merchant, Rickshaw Puller, Chaiwala, Weaver & Hammal Loader.',
   ]);
 
   // Master Game Loop — 2.5s tick rate
